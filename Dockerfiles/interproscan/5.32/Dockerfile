@@ -12,7 +12,13 @@ RUN apt-get update \
   && apt-get -y install openjdk-8-jdk \
   && update-alternatives --config java
 
+# Install Pyhon3
+RUN apt-get install -qq -y python3-pip \
+  && pip3 install -q numpy pandas xmltodict
+
 # Install InterProScan
 RUN wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.32-71.0/alt/interproscan-core-5.32-71.0.tar.gz \
   && tar -zxvf interproscan-core-5.32-71.0.tar.gz \
   && mv interproscan-5.32-71.0 /usr/local/interproscan
+
+USER bioinfo
