@@ -71,8 +71,6 @@ process interproscan {
   input:
     file seq from TRANSCRIPT_SEQS_FOR_IPRSCAN
 
-  output:
-
   script:
     """
     /usr/local/interproscan/interproscan.sh -f TSV,XML,JSON,GFF3,HTML --goterms -i ${seq} --iprlookup --pathways --seqtype n 
