@@ -55,7 +55,7 @@ docker {
 }
 
 singularity {
-  runOptions = ""
+
 }
 
 process {
@@ -121,6 +121,8 @@ profiles {
     }
     singularity {
       enabled = true
+      singularity.runOptions = "--bind ${params.software.interproscan.core_data_path}:/usr/local/interproscan/data,${params.software.interproscan.panther_data_path}:/usr/local/interproscan/data/panther,/tmp:/tmp "
+
     }
   }
 
@@ -148,6 +150,7 @@ profiles {
     }
     singularity {
       enabled = true
+      singularity.runOptions = "--bind ${params.software.interproscan.core_data_path}:/usr/local/interproscan/data,${params.software.interproscan.panther_data_path}:/usr/local/interproscan/data/panther,/tmp:/tmp "
     }
   }
 }

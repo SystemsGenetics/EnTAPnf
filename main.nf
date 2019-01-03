@@ -73,7 +73,7 @@ process interproscan {
 
   script:
     """
-    /usr/local/interproscan/interproscan.sh -f TSV,XML,JSON,GFF3,HTML --goterms -i ${seq} --iprlookup --pathways --seqtype n 
+    /usr/local/interproscan/interproscan.sh -f TSV,XML,JSON,GFF3,HTML --goterms -i ${seq} --iprlookup --pathways --seqtype n
 
     """
 }
