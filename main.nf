@@ -2,26 +2,21 @@
 
 /**
  * ========
- * GEMmaker
+ * AnnoTater
  * ========
  *
  * Authors:
- *  + John Hadish
- *  + Tyler Biggs
  *  + Stephen Ficklin
- *  + Ben Shealy
- *  + Connor Wytko
  *
  * Summary:
- *   A workflow for processing a large amount of RNA-seq data
+ *   A workflow for annotating Eukaryotic transcript sequences from whole genome
+ *   or de novo transcriptome assemblies.
  */
 
 
 
 println """\
-===================================
- FUNC-A   P I P E L I N E
-===================================
+
 General Information:
 --------------------
   Profile(s):         ${workflow.profile}
@@ -29,23 +24,16 @@ General Information:
 
 Input Parameters:
 -----------------
-  transcript (mRNA) file:     ${params.input.transcript_fasta}
+  Transcript (mRNA) file:     ${params.input.transcript_fasta}
+  InterProScan data:          ${params.input.interproscan}
+  Panther data:               ${params.input.panther}
+  NCBI nr data:               ${params.input.nr}
+  Uniprot SwissProt data:     ${params.input.uniprot_sprot}
 
 Output Parameters:
 ------------------
   Output directory:           ${params.output.dir}
 
-Execution Parameters:
----------------------
-  Queue size:                 ${params.execution.queue_size}
-  Number of threads:          ${params.execution.threads}
-  Maximum retries:            ${params.execution.max_retries}
-  Error strategy:             ${params.execution.error_strategy}
-
-Software Parameters:
---------------------
-  IPR core data:              ${params.software.interproscan.core_data_path}
-  IPR panther data:           ${params.software.interproscan.panther_data_path}
 """
 
 /**
@@ -57,7 +45,7 @@ if (params.input.transcript_fasta == "none") {
 else {
   Channel.fromPath(params.input.transcript_fasta)
     .splitFasta(by: 1, file: true)
-    .set { TRANSCRIPT_SEQS_FOR_IPRSCAN } 
+    .set { TRANSCRIPT_SEQS_FOR_IPRSCAN }
 }
 
 
@@ -73,7 +61,19 @@ process interproscan {
 
   script:
     """
-    /usr/local/interproscan/interproscan.sh -f TSV,XML,JSON,GFF3,HTML --goterms -i ${seq} --iprlookup --pathways --seqtype n
-
+    # Call InterProScan on a single sequence.
+    /usr/local/interproscan/interproscan.sh \
+      -f JSON \
+      --goterms \
+      --input ${seq} \
+      --iprlookup \
+      --pathways \
+      --seqtype n \
+      --cpu ${task.cpus} \
+      --output-dir . \
+      --mode standalone \
+      --applications ${params.software.interproscan.applications}
+    # Remove the temp directory created by InterProScan
+    rm -rf ./temp
     """
 }

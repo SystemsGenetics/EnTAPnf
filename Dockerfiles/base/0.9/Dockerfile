@@ -4,9 +4,9 @@ FROM ubuntu:16.04
 
 ################## METADATA ######################
 LABEL base_image="ubuntu:16.04"
-LABEL software="FUNC-A Base Image"
+LABEL software="AnnoTater Base Image"
 LABEL software.version="1.0.0"
-LABEL about.summary="Base image for FUNC-A"
+LABEL about.summary="Base image for AnnoTater"
 LABEL about.home=""
 LABEL about.documentation=""
 LABEL about.license_file=""
