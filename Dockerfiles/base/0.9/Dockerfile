@@ -30,11 +30,14 @@ RUN chmod +x /tini
 RUN groupadd -g 61000 bioinfo \
   && useradd -g 61000 --no-log-init --create-home --shell /bin/bash -u 61000 bioinfo
 
+# Create a directory for annotater specif file that other
+# dependent images may want to use.
+RUN mkdir /annotater  && chown bioinfo /annotater
+
 # Change the active user.
 USER bioinfo
 
 WORKDIR /home/bioinfo
-
 
 # Define the command and parameters that will be executed when this
 # container is first run.

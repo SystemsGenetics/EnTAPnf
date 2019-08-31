@@ -35,18 +35,16 @@ Output Parameters:
   Output directory:           ${params.output.dir}
 
 """
+SEQS_FOR_IPRSCAN  = Channel.create()
+SEQS_FOR_BLASTX_NR = Channel.create()
+SEQS_FOR_BLASTX_SPROT = Channel.create()
 
 /**
  * Read in the transcript sequences. We will process them one at a time.
  */
-if (params.input.transcript_fasta == "none") {
-  Channel.empty().set { TRANSCRIPT_SEQS_FOR_IPRSCAN }
-}
-else {
-  Channel.fromPath(params.input.transcript_fasta)
-    .splitFasta(by: 1, file: true)
-    .set { TRANSCRIPT_SEQS_FOR_IPRSCAN }
-}
+Channel.fromPath(params.input.transcript_fasta)
+       .splitFasta(by: 1, file: true)
+       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT) { a -> [a, a, a]}
 
 
 /**
@@ -57,7 +55,7 @@ process interproscan {
   label "interproscan"
 
   input:
-    file seq from TRANSCRIPT_SEQS_FOR_IPRSCAN
+    file seq from SEQS_FOR_IPRSCAN
 
   script:
     """
@@ -75,5 +73,47 @@ process interproscan {
       --applications ${params.software.interproscan.applications}
     # Remove the temp directory created by InterProScan
     rm -rf ./temp
+    """
+}
+
+/**
+ * Runs NCBI blastx against the NCBI non-redundant database.
+ */
+process blastx_nr {
+  publishDir params.output.dir, mode: "symlink"
+  label "ncbi_blast"
+
+  input:
+    file seq from SEQS_FOR_BLASTX_NR
+
+  script:
+    """
+    /usr/local/ncbi-blast/bin/blastx \
+      -query ${seq} \
+      -db /annotater/nr/nr \
+      -out ${seq}.blastx.xml \
+      -evalue 1e-6 \
+      -outfmt 13
+    """
+}
+
+/**
+ * Runs NCBI blastx against the SwissProt database.
+ */
+process blastx_sprot {
+  publishDir params.output.dir, mode: "symlink"
+  label "ncbi_blast"
+
+  input:
+    file seq from SEQS_FOR_BLASTX_SPROT
+
+  script:
+    """
+    /usr/local/ncbi-blast/bin/blastx \
+      -query ${seq} \
+      -db /annotater/uniprot_sprot/uniprot_sprot \
+      -out ${seq}.blastx.xml \
+      -evalue 1e-6 \
+      -outfmt 13
     """
 }
