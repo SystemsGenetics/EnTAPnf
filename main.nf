@@ -22,13 +22,16 @@ General Information:
   Profile(s):         ${workflow.profile}
   Container Engine:   ${workflow.containerEngine}
 
-Input Parameters:
+Input Files:
 -----------------
   Transcript (mRNA) file:     ${params.input.transcript_fasta}
-  InterProScan data:          ${params.input.interproscan}
-  Panther data:               ${params.input.panther}
-  NCBI nr data:               ${params.input.nr}
-  Uniprot SwissProt data:     ${params.input.uniprot_sprot}
+
+Data Files:
+-----------------
+  InterProScan data:          ${params.data.interproscan}
+  Panther data:               ${params.data.panther}
+  NCBI nr data:               ${params.data.nr}
+  Uniprot SwissProt data:     ${params.data.uniprot_sprot}
 
 Output Parameters:
 ------------------
@@ -47,15 +50,92 @@ Channel.fromPath(params.input.transcript_fasta)
        .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT) { a -> [a, a, a]}
 
 
+process orthodb_index {
+  label "diamond_makedb"
+  cpus = 2
+
+  output:
+    file "*.dmnd" into ORTHODB_INDEXES
+
+  when:
+    params.steps.orthodb.enable == true
+
+  script:
+    if (params.data.orthodb.dbs.plants == true)
+      """
+      for species in ${params.data.orthodb.species.join(" ")}; do
+        diamond makedb \
+          --threads 2 \
+          --in /annotater/orthodb/plants/Rawdata/\${species}_0.fs \
+          --db \${species}
+      done
+      """
+    else
+      """
+        echo "A database for OrthoDB has not been selected"
+        echo ${params.data.orthodb.dbs.plants}
+        exit 1
+      """
+}
+/**
+ * Prepares the Diamond indexes for the Uniprot Sprot database.
+ */
+process uniprot_sprot_index {
+  label "diamond_makedb"
+  cpus = 2
+
+  output:
+    file "*.dmnd" into SPROT_INDEX
+
+  when:
+    params.steps.dblastx_sprot.enable == true
+
+  script:
+  """
+    diamond makedb \
+      --threads 2 \
+      --in /annotater/uniprot_sprot/uniprot_sprot.fasta \
+      --db uniprot_sprot
+  """
+}
+/**
+ * Prepares the Diamond indexes for the NCBI nr database.
+ */
+process nr_index {
+  label "diamond_makedb"
+  cpus = 2
+  memory = "6 GB"
+
+  output:
+    file "*.dmnd" into NR_INDEX
+
+  when:
+    params.steps.dblastx_nr.enable == true
+
+  script:
+  """
+    diamond makedb \
+      --threads 2 \
+      --index-chunks 100 \
+      --in /annotater/nr/nr \
+      --db nr
+  """
+}
+
 /**
  * Runs InterProScan on each sequence
  */
 process interproscan {
-  publishDir params.output.dir, mode: "symlink"
   label "interproscan"
 
   input:
     file seq from SEQS_FOR_IPRSCAN
+
+  output:
+    file "*.json" into INTERPRO_JSON
+
+  when:
+    params.steps.interproscan.enable == true
 
   script:
     """
@@ -70,50 +150,64 @@ process interproscan {
       --cpu ${task.cpus} \
       --output-dir . \
       --mode standalone \
-      --applications ${params.software.interproscan.applications}
+      --applications ${params.steps.interproscan.applications}
     # Remove the temp directory created by InterProScan
     rm -rf ./temp
     """
 }
 
 /**
- * Runs NCBI blastx against the NCBI non-redundant database.
+ * Runs blastx against the NCBI non-redundant database.
  */
-process blastx_nr {
-  publishDir params.output.dir, mode: "symlink"
-  label "ncbi_blast"
+process dblastx_nr {
+  label "diamond"
 
   input:
     file seq from SEQS_FOR_BLASTX_NR
+    file index from NR_INDEX
+
+  output:
+    file "*_vs_nr.dblastx.xml" into BLASTX_NR_XML
+
+  when:
+    params.steps.dblastx_nr.enable == true
 
   script:
     """
-    /usr/local/ncbi-blast/bin/blastx \
-      -query ${seq} \
-      -db /annotater/nr/nr \
-      -out ${seq}.blastx.xml \
-      -evalue 1e-6 \
-      -outfmt 13
+    diamond blastx \
+      --threads 1 \
+      --query ${seq} \
+      --db nr \
+      --out ${seq}_vs_nr.dblastx.xml \
+      --evalue 1e-6 \
+      --outfmt 5
     """
 }
 
 /**
- * Runs NCBI blastx against the SwissProt database.
+ * Runs blastx against the SwissProt database.
  */
-process blastx_sprot {
-  publishDir params.output.dir, mode: "symlink"
-  label "ncbi_blast"
+process dblastx_sprot {
+  label "diamond"
 
   input:
     file seq from SEQS_FOR_BLASTX_SPROT
+    file index from SPROT_INDEX
+
+  output:
+    file "*_vs_uniprot_sprot.blastx_1.xml"  into BLASTX_SPROT_XML
+
+  when:
+    params.steps.dblastx_sprot.enable == true
 
   script:
     """
-    /usr/local/ncbi-blast/bin/blastx \
-      -query ${seq} \
-      -db /annotater/uniprot_sprot/uniprot_sprot \
-      -out ${seq}.blastx.xml \
-      -evalue 1e-6 \
-      -outfmt 13
+    diamond blastx \
+      --threads 1 \
+      --query ${seq} \
+      --db uniprot_sprot \
+      --out ${seq}_vs_uniprot_sprot.blastx.xml \
+      --evalue 1e-6 \
+      --outfmt 5
     """
 }
