@@ -1,4 +1,4 @@
-FROM systemsgenetics/annotater:0.9
+FROM annotater/base:0.9
 
 USER root
 

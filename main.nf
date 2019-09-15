@@ -116,7 +116,7 @@ process nr_index {
   """
     diamond makedb \
       --threads 2 \
-      --index-chunks 100 \
+      --index-chunks 1000 \
       --in /annotater/nr/nr \
       --db nr
   """
