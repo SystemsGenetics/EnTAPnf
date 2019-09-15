@@ -132,7 +132,8 @@ process interproscan {
     file seq from SEQS_FOR_IPRSCAN
 
   output:
-    file "*.json" into INTERPRO_JSON
+    file "*.xml" into INTERPRO_XML
+    file "*.tsv" into INTERPRO_TSV
 
   when:
     params.steps.interproscan.enable == true
@@ -141,7 +142,7 @@ process interproscan {
     """
     # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
-      -f JSON \
+      -f TSV,XML \
       --goterms \
       --input ${seq} \
       --iprlookup \
@@ -154,6 +155,44 @@ process interproscan {
     # Remove the temp directory created by InterProScan
     rm -rf ./temp
     """
+}
+
+/*
+ * Wait until all Interpro jobs have finished and combine
+ * all result files into a single lsit
+ */
+INTERPRO_TSV.collect().set{ INTERPRO_TSV_FILES }
+
+/**
+ * Combine InterProsCan results.
+ */
+process interproscan_combine {
+  publishDir params.output.dir
+
+  input:
+    file tsv_files from INTERPRO_TSV_FILES
+
+  output:
+    file "IPR_mappings.txt" into IPR_MAPPINGS
+    file "GO_mappings.txt" into GO_MAPPINGS
+
+  script:
+  """
+    # Get the gene/transcript to InterPro ID mapping
+    cat *.tsv | awk -F"\\t" '{print \$1"\\t"\$12"\\t"\$13}' | \
+      grep "IPR[[:digit:]]" | \
+      sort -u | \
+      perl -p -e 's/^(.*?)_\\d+(\\t.*)\$/\$1\$2/' \
+      > IPR_mappings.txt
+
+    # Get the gene/transcript to GO Ids mapping
+    cat *.tsv | awk -F"\\t" '{print \$1"\\t"\$14}' | \
+      grep "GO:" | \
+      awk -F"\\t" '{split(\$2, a, "|"); for(i in a) print \$1"\\t"a[i]}' | \
+      sort -u | \
+      perl -p -e 's/^(.*?)_\\d+(\\t.*)\$/\$1\$2/' \
+      > GO_mappings.txt
+  """
 }
 
 /**
@@ -195,7 +234,7 @@ process dblastx_sprot {
     file index from SPROT_INDEX
 
   output:
-    file "*_vs_uniprot_sprot.blastx_1.xml"  into BLASTX_SPROT_XML
+    file "*_vs_uniprot_sprot.blastx.xml"  into BLASTX_SPROT_XML
 
   when:
     params.steps.dblastx_sprot.enable == true
