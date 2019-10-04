@@ -55,7 +55,7 @@ def write_GO(go_file, tsv_file):
 
     # Import partial GO results for this file and set the column anames,
     # drop rows that has NaN in IPR column, and remove duplicates.
-    go_terms = pd.read_table(tsv_file,sep='\t',header=None,names=cols,usecols=[0,13])
+    go_terms = pd.read_csv(tsv_file,sep='\t',header=None,names=cols,usecols=[0,13])
     go_terms.columns = ["Gene", "GO"]
     go_terms = go_terms.dropna(subset=["GO"])
     go_terms = go_terms.drop_duplicates(keep='first')
@@ -89,3 +89,6 @@ if __name__ == "__main__":
     for tsv_file in tsv_filenames:
        write_IPR(ipr_file, tsv_file)
        write_GO(go_file, tsv_file)
+
+    ipr_file.close()
+    go_file.close()
