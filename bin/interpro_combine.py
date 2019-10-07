@@ -2,11 +2,17 @@
 
 
 """
-Overall description of what this module does.
+A Python script for extracting IPR terms and GO terms from the output of
+InterProScan  and combining all the InterProScan output files into a single file
+
+This script extracts the different IPR terms and GO terms assigned to a gene by
+InterProScan and creates IPR_mappings and GO_mappings files with this information.
+Also it combines all the information in different .tsv files produced by
+InterProScan into a single .tsv file.
 
 .. module:: Annotater
     :platform: UNIX, Linux
-    :synopsis: add a short synoposis.
+    :synopsis: add synopsis.
 
 """
 
@@ -35,7 +41,7 @@ def write_IPR(ipr_file, tsv_file):
     ipr_terms = ipr_terms.dropna(subset=["IPR"])
     ipr_terms = ipr_terms.drop_duplicates(keep='first')
 
-    # Removes the training ID number that INterProScan adds to the sequence
+    # Removes the trailing ID number that InterProScan adds to the sequence
     ipr_terms["Gene"] = ipr_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
     ipr_terms.to_csv(ipr_file, sep="\t", mode='a', header=False, index=False)
 
@@ -48,22 +54,29 @@ def write_GO(go_file, tsv_file):
     :param tsv_file: the TSV file from InterProScan.
     """
 
-    # The IPR results do not have a consistent number of columns. Here we creaqte
-    # an array that gets used in the read_table function below that forces
+    # The IPR results do not have a consistent number of columns. Here we create
+    # an array that gets used in the read_csv function below that forces
     # the function to include 15 columns.
     cols = np.arange(15)
 
-    # Import partial GO results for this file and set the column anames,
+    # Import partial GO results for this file and set the column names,
     # drop rows that has NaN in IPR column, and remove duplicates.
     go_terms = pd.read_csv(tsv_file,sep='\t',header=None,names=cols,usecols=[0,13])
     go_terms.columns = ["Gene", "GO"]
     go_terms = go_terms.dropna(subset=["GO"])
     go_terms = go_terms.drop_duplicates(keep='first')
 
-    # Removes the training ID number that INterProScan adds to the sequence
+    # Removes the trailing ID number that InterProScan adds to the sequence
     go_terms["Gene"] = go_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
 
-    print(go_terms)
+    # split the GO column containing the different GO terms associated with Gene
+    # create a MultiIndex matching the Gene with its associated GO terms
+    # copy all the Gene and GO terms into data frame to write it to GO_mappings file
+    go_terms["GO"] = go_terms["GO"].str.split("|")
+    go_annotations = pd.MultiIndex.from_product([np.array(go_terms["Gene"]),np.array(go_terms["GO"])[0]])
+    go_terms = go_annotations.to_frame(index=False)
+    go_terms.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
+
 
 
 if __name__ == "__main__":
@@ -85,10 +98,12 @@ if __name__ == "__main__":
     go_file.write("\t".join(go_headers))
     go_file.write("\n")
 
-    # Iterate through each of the TSV files and pull out the IPR mappings.
+    # Iterate through each of the TSV files and pull out the IPR and GO mappings
     for tsv_file in tsv_filenames:
        write_IPR(ipr_file, tsv_file)
        write_GO(go_file, tsv_file)
 
+
     ipr_file.close()
     go_file.close()
+    
