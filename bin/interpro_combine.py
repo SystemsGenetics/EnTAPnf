@@ -20,6 +20,7 @@ import glob
 import pandas as pd
 import numpy as np
 import re
+import shutil as sh
 
 def write_IPR(ipr_file, tsv_file):
     """"
@@ -87,6 +88,8 @@ if __name__ == "__main__":
     # Open the IPR_mappintgs.txt file where the final IPR mappings will be stored.
     ipr_file = open('IPR_mappings.txt','w')
     go_file = open('GO_mappings.txt','w')
+    combined_tsv_file = open('tsv_combine.tsv','w')
+
 
     # Set the header names for the IPR_mappings.txt file
     ipr_headers = ["Gene", "IPR", "Description"]
@@ -98,12 +101,20 @@ if __name__ == "__main__":
     go_file.write("\t".join(go_headers))
     go_file.write("\n")
 
+
     # Iterate through each of the TSV files and pull out the IPR and GO mappings
     for tsv_file in tsv_filenames:
-       write_IPR(ipr_file, tsv_file)
-       write_GO(go_file, tsv_file)
+        if (tsv_file == 'tsv_combine.tsv'):
+            continue
 
+        write_IPR(ipr_file, tsv_file)
+        write_GO(go_file, tsv_file)
+
+        tsv_fhandle = open(tsv_file,'r')
+        tsv_data = tsv_fhandle.read()
+        combined_tsv_file.write(tsv_data)
+        tsv_fhandle.close()
 
     ipr_file.close()
     go_file.close()
-    
+    combined_tsv_file.close()
