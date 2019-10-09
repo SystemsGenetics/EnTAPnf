@@ -20,7 +20,6 @@ import glob
 import pandas as pd
 import numpy as np
 import re
-import shutil as sh
 
 def write_IPR(ipr_file, tsv_file):
     """"
@@ -71,13 +70,17 @@ def write_GO(go_file, tsv_file):
     go_terms["Gene"] = go_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
 
     # split the GO column containing the different GO terms associated with Gene
-    # create a MultiIndex matching the Gene with its associated GO terms
-    # copy all the Gene and GO terms into data frame to write it to GO_mappings file
     go_terms["GO"] = go_terms["GO"].str.split("|")
-    go_annotations = pd.MultiIndex.from_product([np.array(go_terms["Gene"]),np.array(go_terms["GO"])[0]])
-    go_terms = go_annotations.to_frame(index=False)
-    go_terms.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
 
+    # Create a new empty data frame. Loop over the go_terms dataframe and append
+    # gene names and each individual GO term associated with the gene to the new
+    # data frame. Write this new data frame to GO_mappings file
+    go_annotations = pd.DataFrame(columns = ["Gene","GO"])
+    for index,data in go_terms.iterrows() :
+        for terms in data["GO"]:
+            go_annotations = go_annotations.append({"Gene":data["Gene"],"GO":terms},ignore_index=True)
+    go_annotations = go_annotations.drop_duplicates(keep='first')
+    go_annotations.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
 
 
 if __name__ == "__main__":
