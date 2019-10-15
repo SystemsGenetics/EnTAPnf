@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 """
 A Python script for extracting IPR terms and GO terms from the output of
 InterProScan  and combining all the InterProScan output files into a single file
@@ -16,10 +15,19 @@ InterProScan into a single .tsv file.
 
 """
 
+import argparse
 import glob
 import pandas as pd
 import numpy as np
 import re
+
+# Specifies the arguments for this script
+parser = argparse.ArgumentParser()
+parser.add_argument('tsv_filenames', action='store', nargs='*')
+
+# Read in the input arguments
+args = parser.parse_args()
+
 
 def write_IPR(ipr_file, tsv_file):
     """"
@@ -85,13 +93,20 @@ def write_GO(go_file, tsv_file):
 
 if __name__ == "__main__":
 
-    # Get a list of all TSV files.
-    tsv_filenames = sorted(glob.glob('*.tsv'))
+    # InterProScan adds a number infront of the file extension and a '.tsv' at
+    # the end. The file name and the file extension are extracted to be used for
+    # naming the output files
+    file_name_pattern = re.search(r'^(.*?)\.\d+\.(.*?)\.tsv',args.tsv_filenames[0])
 
-    # Open the IPR_mappintgs.txt file where the final IPR mappings will be stored.
-    ipr_file = open('IPR_mappings.txt','w')
-    go_file = open('GO_mappings.txt','w')
-    combined_tsv_file = open('tsv_combine.tsv','w')
+    # Setting the file names for the output files
+    tsv_combine_name = file_name_pattern.group(1) + "." + file_name_pattern.group(2) + ".tsv"
+    ipr_file_name = file_name_pattern.group(1) + ".IPR_mappings.txt"
+    go_file_name = file_name_pattern.group(1) + ".GO_mappings.txt"
+
+    # Open the files where the IPR mappings, GO mappings and combined TSV will be stored.
+    ipr_file = open(ipr_file_name,'w')
+    go_file = open(go_file_name,'w')
+    combined_tsv_file = open(tsv_combine_name,'w')
 
 
     # Set the header names for the IPR_mappings.txt file
@@ -106,8 +121,8 @@ if __name__ == "__main__":
 
 
     # Iterate through each of the TSV files and pull out the IPR and GO mappings
-    for tsv_file in tsv_filenames:
-        if (tsv_file == 'tsv_combine.tsv'):
+    for tsv_file in args.tsv_filenames:
+        if (tsv_file == tsv_combine_name):
             continue
 
         write_IPR(ipr_file, tsv_file)
@@ -117,6 +132,8 @@ if __name__ == "__main__":
         tsv_data = tsv_fhandle.read()
         combined_tsv_file.write(tsv_data)
         tsv_fhandle.close()
+
+
 
     ipr_file.close()
     go_file.close()
