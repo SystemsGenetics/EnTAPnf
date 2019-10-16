@@ -43,10 +43,10 @@ SEQS_FOR_BLASTX_NR = Channel.create()
 SEQS_FOR_BLASTX_SPROT = Channel.create()
 
 /**
- * Read in the transcript sequences. We will process them one at a time.
+ * Read in the transcript sequences. We will process them in small chunks
  */
 Channel.fromPath(params.input.transcript_fasta)
-       .splitFasta(by: 1, file: true)
+       .splitFasta(by: 10, file: true)
        .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT) { a -> [a, a, a]}
 
 
@@ -178,20 +178,7 @@ process interproscan_combine {
 
   script:
   """
-    # Get the gene/transcript to InterPro ID mapping
-    cat *.tsv | awk -F"\\t" '{print \$1"\\t"\$12"\\t"\$13}' | \
-      grep "IPR[[:digit:]]" | \
-      sort -u | \
-      perl -p -e 's/^(.*?)_\\d+(\\t.*)\$/\$1\$2/' \
-      > IPR_mappings.txt
-
-    # Get the gene/transcript to GO Ids mapping
-    cat *.tsv | awk -F"\\t" '{print \$1"\\t"\$14}' | \
-      grep "GO:" | \
-      awk -F"\\t" '{split(\$2, a, "|"); for(i in a) print \$1"\\t"a[i]}' | \
-      sort -u | \
-      perl -p -e 's/^(.*?)_\\d+(\\t.*)\$/\$1\$2/' \
-      > GO_mappings.txt
+    python3 interpro_combine.py
   """
 }
 
