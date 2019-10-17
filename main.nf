@@ -167,6 +167,8 @@ INTERPRO_TSV.collect().set{ INTERPRO_TSV_FILES }
  * Combine InterProsCan results.
  */
 process interproscan_combine {
+  label "interproscan_combine"
+
   publishDir params.output.dir
 
   input:
@@ -178,7 +180,7 @@ process interproscan_combine {
 
   script:
   """
-    python3 interpro_combine.py
+    interpro_combine.py
   """
 }
 

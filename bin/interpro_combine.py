@@ -21,14 +21,6 @@ import pandas as pd
 import numpy as np
 import re
 
-# Specifies the arguments for this script
-parser = argparse.ArgumentParser()
-parser.add_argument('tsv_filenames', action='store', nargs='*')
-
-# Read in the input arguments
-args = parser.parse_args()
-
-
 def write_IPR(ipr_file, ipr_terms):
     """"
     Retrieves the IPR terms and writes them to a mapping file.
@@ -76,12 +68,19 @@ def write_GO(go_file, go_terms):
     go_annotations.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
 
 
-if __name__ == "__main__":
+def main():
+
+    # Specifies the arguments for this script
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tsv_filenames', action='store', nargs='*')
+
+    # Read in the input arguments
+    args = parser.parse_args()
 
     # InterProScan adds a number infront of the file extension and a '.tsv' at
     # the end. The file name and the file extension are extracted to be used for
     # naming the output files
-    file_name_pattern = re.search(r'^(.*?)\.\d+\.(.*?)\.tsv',args.tsv_filenames[0])
+    file_name_pattern = re.search(r'^(.*?)\.\d+\.(.*?)\.tsv', args.tsv_filenames[0])
 
     # Setting the file names for the output files
     tsv_combine_name = file_name_pattern.group(1) + "." + file_name_pattern.group(2) + ".tsv"
@@ -133,3 +132,6 @@ if __name__ == "__main__":
     ipr_file.close()
     go_file.close()
     combined_tsv_file.close()
+
+if __name__ == "__main__":
+    main()
