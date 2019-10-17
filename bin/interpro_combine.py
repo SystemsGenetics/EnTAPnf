@@ -72,20 +72,18 @@ def main():
 
     # Specifies the arguments for this script
     parser = argparse.ArgumentParser()
-    parser.add_argument('tsv_filenames', action='store', nargs='*')
+    parser.add_argument('input_filename', action='store')
 
     # Read in the input arguments
     args = parser.parse_args()
 
-    # InterProScan adds a number infront of the file extension and a '.tsv' at
-    # the end. The file name and the file extension are extracted to be used for
-    # naming the output files
-    file_name_pattern = re.search(r'^(.*?)\.\d+\.(.*?)\.tsv', args.tsv_filenames[0])
+    # Setting the prefix for output file names based on the input file name
+    file_name_prefix = args.input_filename
 
     # Setting the file names for the output files
-    tsv_combine_name = file_name_pattern.group(1) + "." + file_name_pattern.group(2) + ".tsv"
-    ipr_file_name = file_name_pattern.group(1) + ".IPR_mappings.txt"
-    go_file_name = file_name_pattern.group(1) + ".GO_mappings.txt"
+    tsv_combine_name = file_name_prefix + ".tsv"
+    ipr_file_name = file_name_prefix + ".IPR_mappings.txt"
+    go_file_name = file_name_prefix + ".GO_mappings.txt"
 
     # Open the files to write the IPR mappings, GO mappings and combined TSV data
     ipr_file = open(ipr_file_name,'w')
@@ -107,8 +105,11 @@ def main():
     # the function to include 15 columns.
     cols = np.arange(15)
 
+    # Get a list of all TSV file names
+    tsv_filenames = sorted(glob.glob('*.tsv'))
+
     # Iterate through each of the TSV files and pull out the IPR and GO mappings
-    for tsv_file in args.tsv_filenames:
+    for tsv_file in tsv_filenames:
         if (tsv_file == tsv_combine_name):
             continue
 
