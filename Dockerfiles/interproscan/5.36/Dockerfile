@@ -1,6 +1,5 @@
 FROM annotater/base:0.9
 
-USER root
 
 # Install Oracle Java 8 which is used by InterProScan. Rather than use
 # the apt-add-repository program (which installs a lot of packages) we will
@@ -24,4 +23,3 @@ RUN wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.36-75.0/alt/interpros
 # Install IPRScan dependency
 RUN apt-get install -y elfutils
 
-USER bioinfo

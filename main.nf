@@ -31,7 +31,7 @@ Data Files:
   InterProScan data:          ${params.data.interproscan}
   Panther data:               ${params.data.panther}
   NCBI nr data:               ${params.data.nr}
-  Uniprot SwissProt data:     ${params.data.uniprot_sprot}
+  Uniprot SwissProt data:     ${params.data.sprot}
 
 Output Parameters:
 ------------------
