@@ -50,6 +50,12 @@ Channel.fromPath(params.input.transcript_fasta)
        .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT) { a -> [a, a, a]}
 
 
+// Get the input sequence filename and put it in a value Channel so we
+// can re-use it multiple times.
+matches = params.input.transcript_fasta =~ /.*\/(.*)/
+SEQUENCE_FILENAME = Channel.value(matches[0][1])
+SEQUENCE_FILENAME.subscribe{ println "filename: $it" }
+
 process orthodb_index {
   label "diamond_makedb"
   cpus = 2
@@ -164,7 +170,7 @@ process interproscan {
 INTERPRO_TSV.collect().set{ INTERPRO_TSV_FILES }
 
 /**
- * Combine InterProsCan results.
+ * Combine InterProScan results.
  */
 process interproscan_combine {
   label "interproscan_combine"
@@ -173,14 +179,16 @@ process interproscan_combine {
 
   input:
     file tsv_files from INTERPRO_TSV_FILES
+    val sequence_filename from SEQUENCE_FILENAME
 
   output:
-    file "IPR_mappings.txt" into IPR_MAPPINGS
-    file "GO_mappings.txt" into GO_MAPPINGS
+    file "${sequence_filename}.IPR_mappings.txt" into IPR_MAPPINGS
+    file "${sequence_filename}.GO_mappings.txt" into GO_MAPPINGS
+    file "${sequence_filename}.tsv" into INTEPRO_TSV_COMBINED
 
   script:
   """
-    interpro_combine.py
+    interpro_combine.py ${sequence_filename}
   """
 }
 
