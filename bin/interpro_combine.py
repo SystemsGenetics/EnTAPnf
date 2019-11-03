@@ -20,6 +20,7 @@ import glob
 import pandas as pd
 import numpy as np
 import re
+import sys
 
 def write_IPR(ipr_file, ipr_terms):
     """"
@@ -47,7 +48,7 @@ def write_GO(go_file, go_terms):
     :param go_terms: the pandas object with GO terms information.
     """
 
-    #Drop rows that has NaN in GO column, and remove duplicates.
+    # Drop rows that have NaN in GO column, and remove duplicates.
     go_terms = go_terms.dropna(subset=["GO"])
     go_terms = go_terms.drop_duplicates(keep='first')
 
@@ -55,17 +56,18 @@ def write_GO(go_file, go_terms):
     go_terms["Gene"] = go_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
 
     # split the GO column containing the different GO terms associated with Gene
-    go_terms["GO"] = go_terms["GO"].str.split("|")
+    if (go_terms["GO"].size > 0): 
+    	go_terms["GO"] = go_terms["GO"].str.split("|")
 
-    # Create a new empty data frame. Loop over the go_terms dataframe and append
-    # gene names and each individual GO term associated with the gene to the new
-    # data frame. Write this new data frame to GO_mappings file
-    go_annotations = pd.DataFrame(columns = ["Gene","GO"])
-    for index,data in go_terms.iterrows() :
-        for terms in data["GO"]:
-            go_annotations = go_annotations.append({"Gene":data["Gene"],"GO":terms},ignore_index=True)
-    go_annotations = go_annotations.drop_duplicates(keep='first')
-    go_annotations.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
+    	# Create a new empty data frame. Loop over the go_terms dataframe and append
+    	# gene names and each individual GO term associated with the gene to the new
+    	# data frame. Write this new data frame to GO_mappings file
+    	go_annotations = pd.DataFrame(columns = ["Gene","GO"])
+    	for index,data in go_terms.iterrows() :
+      	  for terms in data["GO"]:
+      	      go_annotations = go_annotations.append({"Gene":data["Gene"],"GO":terms},ignore_index=True)
+    	go_annotations = go_annotations.drop_duplicates(keep='first')
+    	go_annotations.to_csv(go_file, sep="\t", mode='a', header=False, index=False)
 
 
 def main():
@@ -110,13 +112,15 @@ def main():
 
     # Iterate through each of the TSV files and pull out the IPR and GO mappings
     for tsv_file in tsv_filenames:
+
+        # Exclude the file we're creating.
         if (tsv_file == tsv_combine_name):
             continue
-
 
         # Import the data from each file and extract partial GO results and
         # partial IPR results and pass the panda objects with this information
         # to the corresponding functions
+        print("Reading file: " + tsv_file, file=sys.stderr)
 
         tsv_data = pd.read_csv(tsv_file,sep='\t',header=None,names=cols)
         go_terms = tsv_data.loc[:,[0,13]]
