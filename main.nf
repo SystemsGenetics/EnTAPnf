@@ -79,7 +79,7 @@ process orthdb_level2species {
 
   script:
      """
-     orthodb_level2species.py ${level_id} /annotater/orthodb/odb10v0_level2species.tab
+     orthodb_level2species.py ${level_id} ${params.data.orthodb.data_path}/odb10v0_level2species.tab
      """
 }
 LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
@@ -102,7 +102,7 @@ process orthodb_index {
     """
       diamond makedb \
         --threads 2 \
-        --in /annotater/orthodb/plants/Rawdata/${org_id}.fs \
+        --in ${params.data.orthodb.data_path}/plants/Rawdata/${org_id}.fs \
         --db ${org_id}
     """
 }
@@ -148,7 +148,7 @@ process uniprot_sprot_index {
   """
     diamond makedb \
       --threads 2 \
-      --in /annotater/uniprot_sprot/uniprot_sprot.fasta \
+      --in ${params.data.sprot}/uniprot_sprot.fasta \
       --db uniprot_sprot
   """
 }
@@ -171,7 +171,7 @@ process nr_index {
     diamond makedb \
       --threads 2 \
       --index-chunks 1000 \
-      --in /annotater/nr/nr \
+      --in ${params.data.nr}/nr \
       --db nr
   """
 }
