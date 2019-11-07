@@ -41,13 +41,20 @@ Output Parameters:
 SEQS_FOR_IPRSCAN  = Channel.create()
 SEQS_FOR_BLASTX_NR = Channel.create()
 SEQS_FOR_BLASTX_SPROT = Channel.create()
+SEQS_FOR_ORTHODB = Channel.create()
 
 /**
  * Read in the transcript sequences. We will process them in small chunks
+ * and injects those new sequence files as a tuple containing the file name
+ * and the complete file into a set of channels for each major proecess.
  */
 Channel.fromPath(params.input.transcript_fasta)
        .splitFasta(by: 10, file: true)
-       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT) { a -> [a, a, a]}
+       .map {
+         matches = it =~ /.*\/(.*)/
+         [matches[0][1], it]
+       }
+       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT, SEQS_FOR_ORTHODB) { a -> [a, a, a, a]}
 
 
 // Get the input sequence filename and put it in a value Channel so we
@@ -56,33 +63,74 @@ matches = params.input.transcript_fasta =~ /.*\/(.*)/
 SEQUENCE_FILENAME = Channel.value(matches[0][1])
 SEQUENCE_FILENAME.subscribe{ println "filename: $it" }
 
+ORTHODB_LEVELS_LIST = Channel.from(params.steps.orthodb.levels)
+
+process orthdb_level2species {
+   label "orthdb_level2species"
+
+   input:
+     val level_id from ORTHODB_LEVELS_LIST
+
+   output:
+     stdout LEVELS_LIST_CSV
+
+   when:
+     params.steps.orthodb.enable == true
+
+  script:
+     """
+     orthodb_level2species.py ${level_id} /annotater/orthodb/odb10v0_level2species.tab
+     """
+}
+LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
+
+
 process orthodb_index {
   label "diamond_makedb"
   cpus = 2
 
+  input:
+    val org_id from ORTHODB_SPECIES_LIST
+
   output:
-    file "*.dmnd" into ORTHODB_INDEXES
+    set val(org_id), file("${org_id}.dmnd") into ORTHODB_INDEXES
 
   when:
     params.steps.orthodb.enable == true
 
   script:
-    if (params.data.orthodb.dbs.plants == true)
-      """
-      for species in ${params.data.orthodb.species.join(" ")}; do
-        diamond makedb \
-          --threads 2 \
-          --in /annotater/orthodb/plants/Rawdata/\${species}_0.fs \
-          --db \${species}
-      done
-      """
-    else
-      """
-        echo "A database for OrthoDB has not been selected"
-        echo ${params.data.orthodb.dbs.plants}
-        exit 1
-      """
+    """
+      diamond makedb \
+        --threads 2 \
+        --in /annotater/orthodb/plants/Rawdata/${org_id}.fs \
+        --db ${org_id}
+    """
 }
+
+process orthodb_dblast {
+  label "diamond"
+
+  input:
+    set val(dbname), file(dbpath) from ORTHODB_INDEXES
+    each seq from SEQS_FOR_ORTHODB
+
+  output:
+    file "*.dblastx.xml" into ORTHODB_BLASTX_XML
+
+  script:
+    seqname = seq[0]
+    seqfile = seq[1]
+    """
+    diamond blastx \
+      --threads 1 \
+      --query ${seqfile} \
+      --db ${dbname} \
+      --out ${seqname}_vs_${dbname}.dblastx.xml \
+      --evalue 1e-6 \
+      --outfmt 5
+    """
+}
+
 /**
  * Prepares the Diamond indexes for the Uniprot Sprot database.
  */
@@ -199,8 +247,8 @@ process dblastx_nr {
   label "diamond"
 
   input:
-    file seq from SEQS_FOR_BLASTX_NR
     file index from NR_INDEX
+    each seq from SEQS_FOR_BLASTX_NR
 
   output:
     file "*_vs_nr.dblastx.xml" into BLASTX_NR_XML
@@ -209,12 +257,14 @@ process dblastx_nr {
     params.steps.dblastx_nr.enable == true
 
   script:
+    seqname = seq[0]
+    seqfile = seq[1]
     """
     diamond blastx \
       --threads 1 \
-      --query ${seq} \
+      --query ${seqfile} \
       --db nr \
-      --out ${seq}_vs_nr.dblastx.xml \
+      --out ${seqname}_vs_nr.dblastx.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
@@ -227,8 +277,8 @@ process dblastx_sprot {
   label "diamond"
 
   input:
-    file seq from SEQS_FOR_BLASTX_SPROT
     file index from SPROT_INDEX
+    each seq from SEQS_FOR_BLASTX_SPROT
 
   output:
     file "*_vs_uniprot_sprot.blastx.xml"  into BLASTX_SPROT_XML
@@ -237,12 +287,14 @@ process dblastx_sprot {
     params.steps.dblastx_sprot.enable == true
 
   script:
+    seqname = seq[0]
+    seqfile = seq[1]
     """
     diamond blastx \
       --threads 1 \
-      --query ${seq} \
+      --query ${seqfile} \
       --db uniprot_sprot \
-      --out ${seq}_vs_uniprot_sprot.blastx.xml \
+      --out ${seqname}_vs_uniprot_sprot.blastx.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
