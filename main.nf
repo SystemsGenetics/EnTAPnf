@@ -42,9 +42,11 @@ Output Parameters:
 
 """
 SEQS_FOR_IPRSCAN  = Channel.create()
-SEQS_FOR_BLASTX_NR = Channel.create()
-SEQS_FOR_BLASTX_SPROT = Channel.create()
+SEQS_FOR_BLAST_NR = Channel.create()
+SEQS_FOR_BLAST_SPROT = Channel.create()
 SEQS_FOR_ORTHODB = Channel.create()
+SEQS_FOR_BLAST_STRING = Channel.create()
+SEQS_FOR_BLAST_TREMBL = Channel.create()
 
 /**
  * Read in the transcript sequences. We will process them in small chunks
@@ -57,7 +59,7 @@ Channel.fromPath(params.input.fasta_file)
          matches = it =~ /.*\/(.*)/
          [matches[0][1], it]
        }
-       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLASTX_NR, SEQS_FOR_BLASTX_SPROT, SEQS_FOR_ORTHODB) { a -> [a, a, a, a]}
+       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLAST_NR, SEQS_FOR_BLAST_SPROT,SEQS_FOR_ORTHODB, SEQS_FOR_BLAST_STRING, SEQS_FOR_BLAST_TREMBL) { a -> [a, a, a, a, a, a]}
 
 
 // Get the input sequence filename and put it in a value Channel so we
@@ -81,20 +83,38 @@ else {
 }
 
 // Make sure that if the SwissProt BLAST settings are good.
-if (params.steps.dblastx_sprot.enable == true) {
+if (params.steps.dblast_sprot.enable == true) {
   // Make sure the data directory is present.
-  data_file = file("${params.data.sprot}/uniprot_sprot.fasta")
+  data_file = file("${params.data.sprot}/uniprot_sprot.dmnd")
   if (data_file.isEmpty()) {
-    error "Error: the Uniprot SwissProt data file cannot be found at ${params.data.sprot}/uniprot_sprot.fasta. Please check the params.data.sprot setting and make sure the uniprot_sprot.fasta file is present in the specified directory."
+    error "Error: the Uniprot SwissProt Diamond index file cannot be found at ${params.data.sprot}/uniprot_sprot.dmnd. Please check the params.data.sprot setting and make sure the file is present in the specified directory."
   }
 }
 
 // Make sure that if the NR BLAST settings are good.
-if (params.steps.dblastx_nr.enable == true) {
+if (params.steps.dblast_nr.enable == true) {
   // Make sure the data directory is present.
-  data_file = file("${params.data.nr}/nr")
+  data_file = file("${params.data.nr}/nr.dmnd")
   if (data_file.isEmpty()) {
-    error "Error: the NCBI nr data file cannot be found at ${params.data.nr}/nr. Please check the params.data.nr setting and make sure the nr file is present in the specified directory."
+    error "Error: the NCBI nr Diamond index file cannot be found at ${params.data.nr}/nr.dmnd. Please check the params.data.nr setting and make sure the file is present in the specified directory."
+  }
+}
+
+// Make sure that if the Trembl BLAST settings are good.
+if (params.steps.dblast_trembl.enable == true) {
+  // Make sure the data directory is present.
+  data_file = file("${params.data.trembl}/trembl.dmnd")
+  if (data_file.isEmpty()) {
+    error "Error: the Uniprot trembl Diamond index file cannot be found at ${params.data.trembl}/uniprot_trembl.dmnd. Please check the params.data.trembl setting and make sure the file is present in the specified directory."
+  }
+}
+
+// Make sure that the String BLAST settings are good.
+if (params.steps.string.enable == true) {
+  // Make sure the data directory is present.
+  data_file = file("${params.data.string}/protein.sequences.v11.0.dmnd")
+  if (data_file.isEmpty()) {
+    error "Error: the String Diamond index file cannot be found at ${params.data.string}/protein.sequences.v11.0.dmnd. Please check the params.data.string setting and make sure the file is present in the specified directory."
   }
 }
 
@@ -181,51 +201,6 @@ process dblast_index_orthodb {
 }
 
 /**
- * Prepares the Diamond indexes for the Uniprot Sprot database.
- */
-process dblast_index_uniprot_sprot {
-  label "diamond_makedb"
-  cpus = 2
-
-  output:
-    file "*.dmnd" into SPROT_INDEX
-
-  when:
-    params.steps.dblastx_sprot.enable == true
-
-  script:
-  """
-    diamond makedb \
-      --threads 2 \
-      --in ${params.data.sprot}/uniprot_sprot.fasta \
-      --db uniprot_sprot
-  """
-}
-/**
- * Prepares the Diamond indexes for the NCBI nr database.
- */
-process dblast_index_nr {
-  label "diamond_makedb"
-  cpus = 2
-  memory = "6 GB"
-
-  output:
-    file "*.dmnd" into NR_INDEX
-
-  when:
-    params.steps.dblastx_nr.enable == true
-
-  script:
-  """
-    diamond makedb \
-      --threads 2 \
-      --index-chunks 1000 \
-      --in ${params.data.nr}/nr \
-      --db nr
-  """
-}
-
-/**
  * Runs InterProScan on each sequence
  */
 process interproscan {
@@ -296,14 +271,13 @@ process dblast_nr {
 
   input:
     val blast_type from BLAST_TYPE
-    file index from NR_INDEX
-    each seq from SEQS_FOR_BLASTX_NR
+    each seq from SEQS_FOR_BLAST_NR
 
   output:
-    file "*.xml" into BLASTX_NR_XML
+    file "*.xml" into BLAST_NR_XML
 
   when:
-    params.steps.dblastx_nr.enable == true
+    params.steps.dblast_nr.enable == true
 
   script:
     seqname = seq[0]
@@ -312,8 +286,38 @@ process dblast_nr {
     diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
-      --db nr \
+      --db ${params.data.nr}/nr.dmnd \
       --out ${seqname}_vs_nr.${blast_type}.xml \
+      --evalue 1e-6 \
+      --outfmt 5
+    """
+}
+
+/**
+ * Runs Diamond blast against the Uniprot Trembl database.
+ */
+process dblast_trembl {
+  label "diamond"
+
+  input:
+    val blast_type from BLAST_TYPE
+    each seq from SEQS_FOR_BLAST_TREMBL
+
+  output:
+    file "*.xml" into BLAST_TREMBL_XML
+
+  when:
+    params.steps.dblast_trembl.enable == true
+
+  script:
+    seqname = seq[0]
+    seqfile = seq[1]
+    """
+    diamond ${blast_type} \
+      --threads 1 \
+      --query ${seqfile} \
+      --db ${params.data.trembl}/uniprot_trembl.dmnd \
+      --out ${seqname}_vs_uniprot_trembl.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
@@ -327,14 +331,13 @@ process dblast_sprot {
 
   input:
     val blast_type from BLAST_TYPE
-    file index from SPROT_INDEX
-    each seq from SEQS_FOR_BLASTX_SPROT
+    each seq from SEQS_FOR_BLAST_SPROT
 
   output:
-    file "*.xml"  into BLASTX_SPROT_XML
+    file "*.xml"  into BLAST_SPROT_XML
 
   when:
-    params.steps.dblastx_sprot.enable == true
+    params.steps.dblast_sprot.enable == true
 
   script:
     seqname = seq[0]
@@ -343,8 +346,38 @@ process dblast_sprot {
     diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
-      --db uniprot_sprot \
+      --db ${params.data.sprot}/uniprot_sprot.dmnd \
       --out ${seqname}_vs_uniprot_sprot.${blast_type}.xml \
+      --evalue 1e-6 \
+      --outfmt 5
+    """
+}
+
+/**
+ * Runs Diamond blast against the SwissProt database.
+ */
+process dblast_string {
+  label "diamond"
+
+  input:
+    val blast_type from BLAST_TYPE
+    each seq from SEQS_FOR_BLAST_STRING
+
+  output:
+    file "*.xml"  into BLAST_STRING_XML
+
+  when:
+    params.steps.string.enable == true
+
+  script:
+    seqname = seq[0]
+    seqfile = seq[1]
+    """
+    diamond ${blast_type} \
+      --threads 1 \
+      --query ${seqfile} \
+      --db ${param.data.string}/protein.sequences.v11.0.dmnd \
+      --out ${seqname}_vs_string.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
