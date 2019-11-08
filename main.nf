@@ -19,12 +19,13 @@ println """\
 
 General Information:
 --------------------
-  Profile(s):         ${workflow.profile}
-  Container Engine:   ${workflow.containerEngine}
+  Profile(s):                 ${workflow.profile}
+  Container Engine:           ${workflow.containerEngine}
 
 Input Files:
 -----------------
-  Transcript (mRNA) file:     ${params.input.transcript_fasta}
+  Transcript FASTA file:      ${params.input.fasta_file}
+  Transcript file type:       ${params.input.type}
 
 Data Files:
 -----------------
@@ -32,6 +33,8 @@ Data Files:
   Panther data:               ${params.data.panther}
   NCBI nr data:               ${params.data.nr}
   Uniprot SwissProt data:     ${params.data.sprot}
+  OrthoDB data:               ${params.data.orthodb}
+  STRING data:                ${params.data.string}
 
 Output Parameters:
 ------------------
@@ -48,7 +51,7 @@ SEQS_FOR_ORTHODB = Channel.create()
  * and injects those new sequence files as a tuple containing the file name
  * and the complete file into a set of channels for each major proecess.
  */
-Channel.fromPath(params.input.transcript_fasta)
+Channel.fromPath(params.input.fasta_file)
        .splitFasta(by: 10, file: true)
        .map {
          matches = it =~ /.*\/(.*)/
@@ -59,11 +62,75 @@ Channel.fromPath(params.input.transcript_fasta)
 
 // Get the input sequence filename and put it in a value Channel so we
 // can re-use it multiple times.
-matches = params.input.transcript_fasta =~ /.*\/(.*)/
+matches = params.input.fasta_file =~ /.*\/(.*)/
 SEQUENCE_FILENAME = Channel.value(matches[0][1])
-SEQUENCE_FILENAME.subscribe{ println "filename: $it" }
 
+// Create a channel consisting of the array of OrthoDB level IDs
+// to include in the analysis.
 ORTHODB_LEVELS_LIST = Channel.from(params.steps.orthodb.levels)
+
+// Create a channel indicating the type of blast to perform.
+if (params.input.type == "nuc") {
+  BLAST_TYPE = Channel.value('blastx')
+}
+else if (params.input.type == "pep") {
+  BLAST_TYPE = Channel.value('blastp')
+}
+else {
+  error "Error: the params.input.type setting must be either \"nuc\" for nucleotide or \"pep\" for peptide (i.e. protein sequence)."
+}
+
+// Make sure that if the SwissProt BLAST settings are good.
+if (params.steps.dblastx_sprot.enable == true) {
+  // Make sure the data directory is present.
+  data_file = file("${params.data.sprot}/uniprot_sprot.fasta")
+  if (data_file.isEmpty()) {
+    error "Error: the Uniprot SwissProt data file cannot be found at ${params.data.sprot}/uniprot_sprot.fasta. Please check the params.data.sprot setting and make sure the uniprot_sprot.fasta file is present in the specified directory."
+  }
+}
+
+// Make sure that if the NR BLAST settings are good.
+if (params.steps.dblastx_nr.enable == true) {
+  // Make sure the data directory is present.
+  data_file = file("${params.data.nr}/nr")
+  if (data_file.isEmpty()) {
+    error "Error: the NCBI nr data file cannot be found at ${params.data.nr}/nr. Please check the params.data.nr setting and make sure the nr file is present in the specified directory."
+  }
+}
+
+// Make sure that if the OrthoDB database is specified the settings are good.
+if (params.steps.orthodb.enable == true) {
+  // Make sure the database name is valid.
+  if (params.steps.orthodb.db != "plants" &&  params.steps.orthodb.db != "arthropoda" &&
+      params.steps.orthodb.db != "verebrata" && params.steps.orthodb.db != "protozoa" &&
+      params.steps.orthodb.db != "bacteria" && params.steps.orthodb.db != "fungi" &&
+      params.steps.orthodb.db != "virdae") {
+    error "Error: the params.steps.orthodb.db setting should be one of the following: \"plants\", \"arthropoda\", \"verebrata\", \"protozoa\", \"bacteria\", \"fungi\", or \"virdae\"."
+  }
+  ORTHDB_TYPE = Channel.value(params.steps.orthodb.db)
+
+  // Make sure the data directory is present.
+  data_dir = file("${params.data.orthodb}/${params.steps.orthodb.db}")
+  if (data_dir.isEmpty()) {
+    error "Error: the OrthoDB data directory cannot be found: ${params.data.orthodb}/${params.steps.orthodb.db}. Please check the params.data.orthodb setting."
+  }
+}
+
+// Make sure that if the InterProScan settings are good.
+if (params.steps.interproscan.enable == true) {
+  // TODO: make sure the applicatin list is valid.
+
+  // Make sure the data directory is present.
+  data_dir = file("${params.data.interproscan}")
+  if (data_dir.isEmpty()) {
+    error "Error: the InterProScan data directory cannot be found: ${params.data.interproscan}. Please check the params.data.interproscan setting."
+  }
+  data_dir = file("${params.data.panther}")
+  if (data_dir.isEmpty()) {
+    error "Error: the Panther data directory cannot be found: ${params.data.panther}. Please check the params.data.panther setting."
+  }
+}
+
 
 process orthdb_level2species {
    label "orthdb_level2species"
@@ -79,18 +146,19 @@ process orthdb_level2species {
 
   script:
      """
-     orthodb_level2species.py ${level_id} ${params.data.orthodb.data_path}/odb10v0_level2species.tab
+     orthodb_level2species.py ${level_id} ${params.data.orthodb}/odb10v0_level2species.tab
      """
 }
 LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
 
 
-process orthodb_index {
+process dblast_index_orthodb {
   label "diamond_makedb"
   cpus = 2
 
   input:
     val org_id from ORTHODB_SPECIES_LIST
+    val db_type from ORTHDB_TYPE
 
   output:
     set val(org_id), file("${org_id}.dmnd") into ORTHODB_INDEXES
@@ -102,39 +170,15 @@ process orthodb_index {
     """
       diamond makedb \
         --threads 2 \
-        --in ${params.data.orthodb.data_path}/plants/Rawdata/${org_id}.fs \
+        --in ${params.data.orthodb}/${db_type}/Rawdata/${org_id}.fs \
         --db ${org_id}
-    """
-}
-
-process orthodb_dblast {
-  label "diamond"
-
-  input:
-    set val(dbname), file(dbpath) from ORTHODB_INDEXES
-    each seq from SEQS_FOR_ORTHODB
-
-  output:
-    file "*.dblastx.xml" into ORTHODB_BLASTX_XML
-
-  script:
-    seqname = seq[0]
-    seqfile = seq[1]
-    """
-    diamond blastx \
-      --threads 1 \
-      --query ${seqfile} \
-      --db ${dbname} \
-      --out ${seqname}_vs_${dbname}.dblastx.xml \
-      --evalue 1e-6 \
-      --outfmt 5
     """
 }
 
 /**
  * Prepares the Diamond indexes for the Uniprot Sprot database.
  */
-process uniprot_sprot_index {
+process dblast_index_uniprot_sprot {
   label "diamond_makedb"
   cpus = 2
 
@@ -155,7 +199,7 @@ process uniprot_sprot_index {
 /**
  * Prepares the Diamond indexes for the NCBI nr database.
  */
-process nr_index {
+process dblast_index_nr {
   label "diamond_makedb"
   cpus = 2
   memory = "6 GB"
@@ -221,9 +265,8 @@ INTERPRO_TSV.collect().set{ INTERPRO_TSV_FILES }
  * Combine InterProScan results.
  */
 process interproscan_combine {
-  label "interproscan_combine"
-
   publishDir params.output.dir
+  label "interproscan_combine"
 
   input:
     file tsv_files from INTERPRO_TSV_FILES
@@ -243,15 +286,16 @@ process interproscan_combine {
 /**
  * Runs blastx against the NCBI non-redundant database.
  */
-process dblastx_nr {
+process dblast_nr {
   label "diamond"
 
   input:
+    val blast_type from BLAST_TYPE
     file index from NR_INDEX
     each seq from SEQS_FOR_BLASTX_NR
 
   output:
-    file "*_vs_nr.dblastx.xml" into BLASTX_NR_XML
+    file "*.xml" into BLASTX_NR_XML
 
   when:
     params.steps.dblastx_nr.enable == true
@@ -260,11 +304,11 @@ process dblastx_nr {
     seqname = seq[0]
     seqfile = seq[1]
     """
-    diamond blastx \
+    diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
       --db nr \
-      --out ${seqname}_vs_nr.dblastx.xml \
+      --out ${seqname}_vs_nr.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
@@ -273,15 +317,16 @@ process dblastx_nr {
 /**
  * Runs blastx against the SwissProt database.
  */
-process dblastx_sprot {
+process dblast_sprot {
   label "diamond"
 
   input:
+    val blast_type from BLAST_TYPE
     file index from SPROT_INDEX
     each seq from SEQS_FOR_BLASTX_SPROT
 
   output:
-    file "*_vs_uniprot_sprot.blastx.xml"  into BLASTX_SPROT_XML
+    file "*.xml"  into BLASTX_SPROT_XML
 
   when:
     params.steps.dblastx_sprot.enable == true
@@ -290,11 +335,37 @@ process dblastx_sprot {
     seqname = seq[0]
     seqfile = seq[1]
     """
-    diamond blastx \
+    diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
       --db uniprot_sprot \
-      --out ${seqname}_vs_uniprot_sprot.blastx.xml \
+      --out ${seqname}_vs_uniprot_sprot.${blast_type}.xml \
+      --evalue 1e-6 \
+      --outfmt 5
+    """
+}
+
+
+process dblast_orthodb {
+  label "diamond"
+
+  input:
+    val blast_type from BLAST_TYPE
+    set val(dbname), file(dbpath) from ORTHODB_INDEXES
+    each seq from SEQS_FOR_ORTHODB
+
+  output:
+    file "*.xml" into ORTHODB_BLASTX_XML
+
+  script:
+    seqname = seq[0]
+    seqfile = seq[1]
+    """
+    diamond ${blast_type} \
+      --threads 1 \
+      --query ${seqfile} \
+      --db ${dbname} \
+      --out ${seqname}_vs_${dbname}.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
