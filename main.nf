@@ -119,6 +119,7 @@ if (params.steps.string.enable == true) {
 }
 
 // Make sure that if the OrthoDB database is specified the settings are good.
+ORTHDB_TYPE  = Channel.create()
 if (params.steps.orthodb.enable == true) {
   // Make sure the database name is valid.
   if (params.steps.orthodb.db != "plants" &&  params.steps.orthodb.db != "arthropoda" &&
