@@ -131,7 +131,10 @@ if (params.steps.interproscan.enable == true) {
   }
 }
 
-
+/**
+ * Retreives the list of species that should be searched for orthologs given
+ * the levels provided by the user in the config file.
+ */
 process orthdb_level2species {
    label "orthdb_level2species"
 
@@ -151,7 +154,9 @@ process orthdb_level2species {
 }
 LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
 
-
+/**
+ * Prepares the Diamond indexes for the OrthoDB species data files.
+ */
 process dblast_index_orthodb {
   label "diamond_makedb"
   cpus = 2
@@ -284,7 +289,7 @@ process interproscan_combine {
 }
 
 /**
- * Runs blastx against the NCBI non-redundant database.
+ * Runs Diamond blast against the NCBI non-redundant database.
  */
 process dblast_nr {
   label "diamond"
@@ -315,7 +320,7 @@ process dblast_nr {
 }
 
 /**
- * Runs blastx against the SwissProt database.
+ * Runs Diamond blast against the SwissProt database.
  */
 process dblast_sprot {
   label "diamond"
@@ -345,7 +350,9 @@ process dblast_sprot {
     """
 }
 
-
+/**
+ * Runs Diamond blast against the OrthoDB species files.
+ */
 process dblast_orthodb {
   label "diamond"
 
