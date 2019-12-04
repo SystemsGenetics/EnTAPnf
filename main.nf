@@ -30,7 +30,6 @@ Input Files:
 Data Files:
 -----------------
   InterProScan data:          ${params.data.interproscan}
-  Panther data:               ${params.data.panther}
   NCBI nr data:               ${params.data.nr}
   Uniprot SwissProt data:     ${params.data.sprot}
   OrthoDB data:               ${params.data.orthodb}
@@ -125,10 +124,6 @@ if (params.steps.interproscan.enable == true) {
   data_dir = file("${params.data.interproscan}")
   if (data_dir.isEmpty()) {
     error "Error: the InterProScan data directory cannot be found: ${params.data.interproscan}. Please check the params.data.interproscan setting."
-  }
-  data_dir = file("${params.data.panther}")
-  if (data_dir.isEmpty()) {
-    error "Error: the Panther data directory cannot be found: ${params.data.panther}. Please check the params.data.panther setting."
   }
 }
 
