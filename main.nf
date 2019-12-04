@@ -239,9 +239,13 @@ process interproscan {
 
   script:
     """
-    # Forcefully(overwrite) make a soft link !HACK!
-    rm -fr /usr/local/interproscan/data
-    ln -s /workspace/alucinor/dbs/interproscan/interproscan-5.36-75.0/data /usr/local/interproscan/data
+    # If this is kubernetes then hack a soft link for InterProScan's data
+    EMPTY=""
+    if [ -n ${INTERPROSCAN_DATA_DIR+EMPTY} ]
+    then
+        rm -fr /usr/local/interproscan/data
+        ln -s ${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+    fi
     # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
