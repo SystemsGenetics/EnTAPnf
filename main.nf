@@ -239,6 +239,8 @@ process interproscan {
 
   script:
     """
+    # Forcefully(overwrite) make a soft link !HACK!
+    ln -fs /workspace/alucinor/dbs/interproscan/interproscan-5.36-75.0/data /usr/local/interproscan/data
     # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
