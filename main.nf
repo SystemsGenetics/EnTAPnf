@@ -241,10 +241,10 @@ process interproscan {
     """
     # If this is kubernetes then hack a soft link for InterProScan's data
     EMPTY=""
-    if [ -n ${INTERPROSCAN_DATA_DIR+EMPTY} ]
+    if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
     then
         rm -fr /usr/local/interproscan/data
-        ln -s ${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+        ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
     fi
     # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
