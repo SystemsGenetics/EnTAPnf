@@ -30,7 +30,6 @@ Input Files:
 Data Files:
 -----------------
   InterProScan data:          ${params.data.interproscan}
-  Panther data:               ${params.data.panther}
   NCBI nr data:               ${params.data.nr}
   Uniprot SwissProt data:     ${params.data.sprot}
   OrthoDB data:               ${params.data.orthodb}
@@ -103,7 +102,7 @@ if (params.steps.dblast_nr.enable == true) {
 // Make sure that if the Trembl BLAST settings are good.
 if (params.steps.dblast_trembl.enable == true) {
   // Make sure the data directory is present.
-  data_file = file("${params.data.trembl}/trembl.dmnd")
+  data_file = file("${params.data.trembl}/uniprot_trembl.dmnd")
   if (data_file.isEmpty()) {
     error "Error: the Uniprot trembl Diamond index file cannot be found at ${params.data.trembl}/uniprot_trembl.dmnd. Please check the params.data.trembl setting and make sure the file is present in the specified directory."
   }
@@ -146,10 +145,6 @@ if (params.steps.interproscan.enable == true) {
   if (data_dir.isEmpty()) {
     error "Error: the InterProScan data directory cannot be found: ${params.data.interproscan}. Please check the params.data.interproscan setting."
   }
-  data_dir = file("${params.data.panther}")
-  if (data_dir.isEmpty()) {
-    error "Error: the Panther data directory cannot be found: ${params.data.panther}. Please check the params.data.panther setting."
-  }
 }
 
 /**
@@ -175,36 +170,12 @@ process orthdb_level2species {
 }
 LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
 
-/**
- * Prepares the Diamond indexes for the OrthoDB species data files.
- */
-process dblast_index_orthodb {
-  label "diamond_makedb"
-  cpus = 2
-
-  input:
-    val org_id from ORTHODB_SPECIES_LIST
-    val db_type from ORTHDB_TYPE
-
-  output:
-    set val(org_id), file("${org_id}.dmnd") into ORTHODB_INDEXES
-
-  when:
-    params.steps.orthodb.enable == true
-
-  script:
-    """
-      diamond makedb \
-        --threads 2 \
-        --in ${params.data.orthodb}/${db_type}/Rawdata/${org_id}.fs \
-        --db ${org_id}
-    """
-}
 
 /**
  * Runs InterProScan on each sequence
  */
 process interproscan {
+  publishDir "${params.output.dir}/interpro/xml", mode: "link", pattern: "*.xml"
   label "interproscan"
 
   input:
@@ -246,7 +217,7 @@ INTERPRO_TSV.collect().set{ INTERPRO_TSV_FILES }
  * Combine InterProScan results.
  */
 process interproscan_combine {
-  publishDir params.output.dir
+  publishDir "${params.output.dir}/interpro", mode: "link"
   label "interproscan_combine"
 
   input:
@@ -268,11 +239,13 @@ process interproscan_combine {
  * Runs Diamond blast against the NCBI non-redundant database.
  */
 process dblast_nr {
+  publishDir "${params.output.dir}/nr", mode: "link"
   label "diamond"
+  memory "8 GB"
 
   input:
     val blast_type from BLAST_TYPE
-    each seq from SEQS_FOR_BLAST_NR
+    set val(seqname), file(seqfile) from SEQS_FOR_BLAST_NR
 
   output:
     file "*.xml" into BLAST_NR_XML
@@ -281,8 +254,6 @@ process dblast_nr {
     params.steps.dblast_nr.enable == true
 
   script:
-    seqname = seq[0]
-    seqfile = seq[1]
     """
     diamond ${blast_type} \
       --threads 1 \
@@ -298,11 +269,13 @@ process dblast_nr {
  * Runs Diamond blast against the Uniprot Trembl database.
  */
 process dblast_trembl {
+  publishDir "${params.output.dir}/trembl", mode: "link"
   label "diamond"
+  memory "4 GB"
 
   input:
     val blast_type from BLAST_TYPE
-    each seq from SEQS_FOR_BLAST_TREMBL
+    set val(seqname), file(seqfile) from SEQS_FOR_BLAST_TREMBL
 
   output:
     file "*.xml" into BLAST_TREMBL_XML
@@ -311,8 +284,6 @@ process dblast_trembl {
     params.steps.dblast_trembl.enable == true
 
   script:
-    seqname = seq[0]
-    seqfile = seq[1]
     """
     diamond ${blast_type} \
       --threads 1 \
@@ -328,11 +299,12 @@ process dblast_trembl {
  * Runs Diamond blast against the SwissProt database.
  */
 process dblast_sprot {
+  publishDir "${params.output.dir}/sprot", mode: "link"
   label "diamond"
 
   input:
     val blast_type from BLAST_TYPE
-    each seq from SEQS_FOR_BLAST_SPROT
+    set val(seqname), file(seqfile) from SEQS_FOR_BLAST_SPROT
 
   output:
     file "*.xml"  into BLAST_SPROT_XML
@@ -341,8 +313,6 @@ process dblast_sprot {
     params.steps.dblast_sprot.enable == true
 
   script:
-    seqname = seq[0]
-    seqfile = seq[1]
     """
     diamond ${blast_type} \
       --threads 1 \
@@ -362,7 +332,7 @@ process dblast_string {
 
   input:
     val blast_type from BLAST_TYPE
-    each seq from SEQS_FOR_BLAST_STRING
+    set val(seqname), file(seqfile) from SEQS_FOR_BLAST_STRING
 
   output:
     file "*.xml"  into BLAST_STRING_XML
@@ -371,13 +341,11 @@ process dblast_string {
     params.steps.string.enable == true
 
   script:
-    seqname = seq[0]
-    seqfile = seq[1]
     """
     diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
-      --db ${param.data.string}/protein.sequences.v11.0.dmnd \
+      --db ${params.data.string}/protein.sequences.v11.0.dmnd \
       --out ${seqname}_vs_string.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
@@ -392,21 +360,21 @@ process dblast_orthodb {
 
   input:
     val blast_type from BLAST_TYPE
-    set val(dbname), file(dbpath) from ORTHODB_INDEXES
-    each seq from SEQS_FOR_ORTHODB
+    set val(seqname), file(seqfile) from SEQS_FOR_ORTHODB
 
   output:
     file "*.xml" into ORTHODB_BLASTX_XML
 
+  when:
+    params.steps.orthodb.enable == true
+
   script:
-    seqname = seq[0]
-    seqfile = seq[1]
     """
     diamond ${blast_type} \
       --threads 1 \
       --query ${seqfile} \
-      --db ${dbname} \
-      --out ${seqname}_vs_${dbname}.${blast_type}.xml \
+      --db ${params.data.orthodb}/odb10_all_og.dmnd \
+      --out ${seqname}_vs_odb10_all_og.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """

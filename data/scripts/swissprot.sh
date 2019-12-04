@@ -1,11 +1,13 @@
+#!/usr/bin/env bash
+
 # Prepare the directory
 mkdir -p uniprot_sprot
 rm -rf uniprot_sprot/*
+cd uniprot_sprot
 
 # Download the file
-cd uniprot_sprot
 wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
 gunzip uniprot_sprot.fasta.gz
 
 # Index the file
-diamond makedb --threads 4 --in uniprot_sprot.fasta -d uniprot_sprot
+docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-0.9 /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in uniprot_sprot.fasta -d uniprot_sprot"

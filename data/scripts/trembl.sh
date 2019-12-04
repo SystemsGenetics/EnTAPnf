@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Prepare the directory
 mkdir -p uniprot_trembl
 rm -rf uniprot_tremble/*
@@ -8,4 +10,4 @@ wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/c
 gunzip uniprot_trembl.fasta.gz
 
 # Index the file for BLAST
-diamond makedb --threads 4 --in uniprot_trembl.fasta -d uniprot_tremble
+docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-0.9 /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in uniprot_trembl.fasta -d uniprot_trembl"
