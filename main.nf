@@ -233,7 +233,7 @@ process interproscan {
   label "interproscan"
 
   input:
-    file seq from SEQS_FOR_IPRSCAN
+    set val(seqname), file(seqfile) from SEQS_FOR_IPRSCAN
 
   output:
     file "*.xml" into INTERPRO_XML
@@ -248,7 +248,7 @@ process interproscan {
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
       --goterms \
-      --input ${seq} \
+      --input ${seqfile} \
       --iprlookup \
       --pathways \
       --seqtype n \
