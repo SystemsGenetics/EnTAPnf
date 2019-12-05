@@ -179,7 +179,7 @@ process interproscan {
   label "interproscan"
 
   input:
-    file seq from SEQS_FOR_IPRSCAN
+    set val(seqname), file(seqfile) from SEQS_FOR_IPRSCAN
 
   output:
     file "*.xml" into INTERPRO_XML
@@ -190,11 +190,18 @@ process interproscan {
 
   script:
     """
+    # If this is kubernetes then hack a soft link for InterProScan's data
+    EMPTY=""
+    if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
+    then
+        rm -fr /usr/local/interproscan/data
+        ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+    fi
     # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
       --goterms \
-      --input ${seq} \
+      --input ${seqfile} \
       --iprlookup \
       --pathways \
       --seqtype n \
