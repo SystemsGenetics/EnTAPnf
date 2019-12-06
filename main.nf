@@ -239,6 +239,7 @@ process interproscan {
 
   script:
     """
+    #!/bin/bash -e
     # If this is kubernetes then hack a soft link for InterProScan's data
     EMPTY=""
     if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
