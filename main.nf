@@ -73,9 +73,11 @@ ORTHODB_LEVELS_LIST = Channel.from(params.steps.orthodb.levels)
 // Create a channel indicating the type of blast to perform.
 if (params.input.type == "nuc") {
   BLAST_TYPE = Channel.value('blastx')
+  INTERPRO_TYPE = Channel.value('n')
 }
 else if (params.input.type == "pep") {
   BLAST_TYPE = Channel.value('blastp')
+  INTERPRO_TYPE = Channel.value('p')
 }
 else {
   error "Error: the params.input.type setting must be either \"nuc\" for nucleotide or \"pep\" for peptide (i.e. protein sequence)."
@@ -180,6 +182,7 @@ process interproscan {
 
   input:
     set val(seqname), file(seqfile) from SEQS_FOR_IPRSCAN
+    val seq_type from INTERPRO_TYPE
 
   output:
     file "*.xml" into INTERPRO_XML
@@ -191,20 +194,23 @@ process interproscan {
   script:
     """
     # If this is kubernetes then hack a soft link for InterProScan's data
-    EMPTY=""
-    if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
-    then
-        rm -fr /usr/local/interproscan/data
-        ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+    if [ "${workflow.profile}" == "k8s" ]; then
+      #EMPTY=""
+      #if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
+      #then
+      #    rm -fr /usr/local/interproscan/data
+      #    ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+      #fi
+      # Call InterProScan on a single sequence.
+      echo "Hello!"
     fi
-    # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
       --goterms \
       --input ${seqfile} \
       --iprlookup \
       --pathways \
-      --seqtype n \
+      --seqtype ${seq_type} \
       --cpu ${task.cpus} \
       --output-dir . \
       --mode standalone \
@@ -385,4 +391,25 @@ process dblast_orthodb {
       --evalue 1e-6 \
       --outfmt 5
     """
+}
+
+/**
+ * Parses blast output against the orthdb blast databases and finds orthologs.
+ */
+process parse_dblast_orthodb {
+   label "python3"
+
+   input:
+     file blast_xml from ORTHODB_BLASTX_XML
+
+   output:
+     file "*.txt" into ORTHODB_BLASTX_TXT
+
+   when:
+     params.steps.orthodb.enable == true
+
+   script:
+     """
+     parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
+     """
 }

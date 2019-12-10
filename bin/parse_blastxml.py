@@ -12,6 +12,7 @@ Parses BLAST compatible XML files
 from lxml import etree
 import pandas as pd
 import argparse
+import re
 
 class HitTarget(object):
     """
@@ -90,6 +91,7 @@ class HitTarget(object):
                 self.current_hsp.loc['Hit_accession'] = self.current_hit_acc
             else:
                 # TODO: adjust these for non NCBI recognized databases.
+
                 self.current_hsp.loc['Hit_id'] = self.current_hit
                 self.current_hsp.loc['Hit_def'] = self.current_hit_def
                 self.current_hsp.loc['Hit_len'] = self.current_hit_len
@@ -115,8 +117,14 @@ class HitTarget(object):
         # Handle query details
         if self.current_tag == 'Iteration_query-ID':
             self.current_query = data
+
         if self.current_tag == 'Iteration_query-def':
             self.current_query_def = data
+            if self.parse_ncbi is None:
+                match = re.match(r'^(.*?)\s.*$', self.current_query_def)
+                if (match):
+                    self.current_query = match.group(1)
+
         if self.current_tag == 'Iteration_query-len':
             self.current_query_len = data
 
@@ -161,6 +169,11 @@ class HitTarget(object):
           'Hsp_query-frame': 'Query_frame',
           'Hsp_hit-frame': 'Hit_frame'
         })
+
+        # Remove some unwanted columns
+        results = results.drop('Query_def', 1)
+
+        # Return the final resulting data frame.
         return results
 
 def parseBLASTXMLfile(xml_file, parse_ncbi):
@@ -180,9 +193,9 @@ def main():
 
     # Specifies the arguments for this script
     parser = argparse.ArgumentParser()
-    parser.add_argument('xml_file', action='store')
-    parser.add_argument('out_file', action='store')
-    parser.add_argument('parse_ncbi', action='store')
+    parser.add_argument('--xml_file', dest='xml_file', type=str, required=True)
+    parser.add_argument('--out_file', dest='out_file', type=str, required=True)
+    parser.add_argument('--parse_ncbi', dest='parse_ncbi', type=bool, required=False)
 
     # Read in the input arguments
     args = parser.parse_args()

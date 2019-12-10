@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Retrieving all species below a given taxonomic level in OrthoDB.
+Retrieves all species below a given taxonomic level in OrthoDB.
 
 .. module:: Annotater
     :platform: UNIX, Linux
