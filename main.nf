@@ -42,6 +42,7 @@ Output Parameters:
 """
 SEQS_FOR_IPRSCAN  = Channel.create()
 SEQS_FOR_BLAST_NR = Channel.create()
+SEQS_FOR_BLAST_REFSEQ = Channel.create()
 SEQS_FOR_BLAST_SPROT = Channel.create()
 SEQS_FOR_ORTHODB = Channel.create()
 SEQS_FOR_BLAST_STRING = Channel.create()
@@ -58,7 +59,7 @@ Channel.fromPath(params.input.fasta_file)
          matches = it =~ /.*\/(.*)/
          [matches[0][1], it]
        }
-       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLAST_NR, SEQS_FOR_BLAST_SPROT,SEQS_FOR_ORTHODB, SEQS_FOR_BLAST_STRING, SEQS_FOR_BLAST_TREMBL) { a -> [a, a, a, a, a, a]}
+       .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLAST_NR, SEQS_FOR_BLAST_REFSEQ, SEQS_FOR_BLAST_SPROT,SEQS_FOR_ORTHODB, SEQS_FOR_BLAST_STRING, SEQS_FOR_BLAST_TREMBL) { a -> [a, a, a, a, a, a, a]}
 
 
 // Get the input sequence filename and put it in a value Channel so we
@@ -98,6 +99,15 @@ if (params.steps.dblast_nr.enable == true) {
   data_file = file("${params.data.nr}/nr.dmnd")
   if (data_file.isEmpty()) {
     error "Error: the NCBI nr Diamond index file cannot be found at ${params.data.nr}/nr.dmnd. Please check the params.data.nr setting and make sure the file is present in the specified directory."
+  }
+}
+
+// Make sure that if the NR BLAST settings are good.
+if (params.steps.dblast_refseq.enable == true) {
+  // Make sure the data directory is present.
+  data_file = file("${params.data.refseq}/refseq_plant.protein.dmnd")
+  if (data_file.isEmpty()) {
+    error "Error: the NCBI nr RefSeq index file cannot be found at ${params.data.refseq}/refseq_plant.protein.dmnd. Please check the params.data.refseq setting and make sure the file is present in the specified directory."
   }
 }
 
@@ -273,6 +283,36 @@ process dblast_nr {
       --query ${seqfile} \
       --db ${params.data.nr}/nr.dmnd \
       --out ${seqname}_vs_nr.${blast_type}.xml \
+      --evalue 1e-6 \
+      --outfmt 5
+    """
+}
+
+/**
+ * Runs Diamond blast against the NCBI non-redundant database.
+ */
+process dblast_refseq {
+  publishDir "${params.output.dir}/refseq", mode: "link"
+  label "diamond"
+  memory "8 GB"
+
+  input:
+    val blast_type from BLAST_TYPE
+    set val(seqname), file(seqfile) from SEQS_FOR_BLAST_REFSEQ
+
+  output:
+    file "*.xml" into BLAST_REFSEQ_XML
+
+  when:
+    params.steps.dblast_refseq.enable == true
+
+  script:
+    """
+    diamond ${blast_type} \
+      --threads 1 \
+      --query ${seqfile} \
+      --db ${params.data.refseq}/refseq_plant.protein.dmnd \
+      --out ${seqname}_vs_refseq_plant.${blast_type}.xml \
       --evalue 1e-6 \
       --outfmt 5
     """
