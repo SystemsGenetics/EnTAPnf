@@ -7,9 +7,12 @@ mkdir -p uniprot_sprot
 rm -rf uniprot_sprot/*
 cd uniprot_sprot
 
-# Download the file
+# Download the FASTA file
 wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
 gunzip uniprot_sprot.fasta.gz
+
+# Download the protein ID to EC number mapping file
+wget ftp://ftp.expasy.org/databases/enzyme/enzyme.dat
 
 # Index the file
 docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in uniprot_sprot.fasta -d uniprot_sprot"

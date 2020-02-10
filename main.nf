@@ -132,19 +132,12 @@ if (params.steps.string.enable == true) {
 // Make sure that if the OrthoDB database is specified the settings are good.
 ORTHDB_TYPE  = Channel.create()
 if (params.steps.orthodb.enable == true) {
-  // Make sure the database name is valid.
-  if (params.steps.orthodb.db != "plants" &&  params.steps.orthodb.db != "arthropoda" &&
-      params.steps.orthodb.db != "verebrata" && params.steps.orthodb.db != "protozoa" &&
-      params.steps.orthodb.db != "bacteria" && params.steps.orthodb.db != "fungi" &&
-      params.steps.orthodb.db != "virdae") {
-    error "Error: the params.steps.orthodb.db setting should be one of the following: \"plants\", \"arthropoda\", \"verebrata\", \"protozoa\", \"bacteria\", \"fungi\", or \"virdae\"."
-  }
   ORTHDB_TYPE = Channel.value(params.steps.orthodb.db)
 
   // Make sure the data directory is present.
-  data_dir = file("${params.data.orthodb}/${params.steps.orthodb.db}")
+  data_dir = file("${params.data.orthodb}")
   if (data_dir.isEmpty()) {
-    error "Error: the OrthoDB data directory cannot be found: ${params.data.orthodb}/${params.steps.orthodb.db}. Please check the params.data.orthodb setting."
+    error "Error: the OrthoDB data directory cannot be found: ${params.data.orthodb}. Please check the params.data.orthodb setting."
   }
 }
 
@@ -429,7 +422,7 @@ process dblast_orthodb {
       --query ${seqfile} \
       --db ${params.data.orthodb}/odb10_all_og.dmnd \
       --out ${seqname}_vs_odb10_all_og.${blast_type}.xml \
-      --evalue 1e-6 \
+      --evalue 1e-50 \
       --outfmt 5
     """
 }
@@ -438,6 +431,7 @@ process dblast_orthodb {
  * Parses blast output against the orthdb blast databases and finds orthologs.
  */
 process parse_dblast_orthodb {
+   publishDir "${params.output.dir}/orthodb", mode: "link"
    label "python3"
 
    input:

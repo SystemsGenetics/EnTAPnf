@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Retrieves all species below a given taxonomic level in OrthoDB.
 

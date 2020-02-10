@@ -20,5 +20,14 @@ gunzip odb10v0_OGs.tab.gz
 wget https://v100.orthodb.org/download/odb10_all_og_fasta.tab.gz
 gunzip odb10_all_og_fasta.tab.gz
 
+wget https://v101.orthodb.org/download/odb10v1_OG_xrefs.tab.gz
+gunzip odb10v1_OG_xrefs.tab.gz
+
+wget https://v101.orthodb.org/download/odb10v1_species.tab.gz
+gunzip odb10v1_species.tab.gz
+
+wget https://v101.orthodb.org/download/odb10v1_gene_xrefs.tab.gz
+gunzip odb10v1_gene_xrefs.tab.gz
+
 # Index the file for BLAST
 docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in odb10_all_og_fasta.tab -d odb10_all_og"
