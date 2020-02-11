@@ -127,6 +127,14 @@ if (params.steps.string.enable == true) {
   if (data_file.isEmpty()) {
     error "Error: the String Diamond index file cannot be found at ${params.data.string}/protein.sequences.v11.0.dmnd. Please check the params.data.string setting and make sure the file is present in the specified directory."
   }
+  file("${params.data.string}/protein.links.full.v11.0.txt")
+  if (data_file.isEmpty()) {
+    error "Error: the String linksfile cannot be found at ${params.data.string}/protein.links.full.v11.0.txt. Please check the params.data.string setting and make sure the file is present in the specified directory."
+  }
+  file("${params.data.string}/protein.info.v11.0.txt")
+  if (data_file.isEmpty()) {
+    error "Error: the String Diamond index file cannot be found at ${params.data.string}/protein.info.v11.0.txt. Please check the params.data.string setting and make sure the file is present in the specified directory."
+  }
 }
 
 // Make sure that if the OrthoDB database is specified the settings are good.
