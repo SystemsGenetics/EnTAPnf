@@ -206,16 +206,16 @@ process interproscan {
     """
     #!/bin/bash -e
     # If this is kubernetes then hack a soft link for InterProScan's data
-    if [ "${workflow.profile}" == "k8s" ]; then
-      #EMPTY=""
-      #if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
-      #then
-      #    rm -fr /usr/local/interproscan/data
-      #    ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
-      #fi
-      # Call InterProScan on a single sequence.
-      echo "Hello!"
+    EMPTY=""
+    if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
+    then
+        if [ "\${INTERPROSCAN_DATA_DIR}" != "/usr/local/interproscan/data" ] && [ "\${INTERPROSCAN_DATA_DIR}" != "" ]
+        then
+            rm -fr /usr/local/interproscan/data
+            ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+        fi
     fi
+    # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
       --goterms \
