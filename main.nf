@@ -7,6 +7,7 @@
  *
  * Authors:
  *  + Stephen Ficklin
+ *  + Mitchell Greer
  *
  * Summary:
  *   A workflow for annotating Eukaryotic transcript sequences from whole genome
@@ -62,14 +63,15 @@ Channel.fromPath(params.input.fasta_file)
        .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLAST_NR, SEQS_FOR_BLAST_REFSEQ, SEQS_FOR_BLAST_SPROT,SEQS_FOR_ORTHODB, SEQS_FOR_BLAST_STRING, SEQS_FOR_BLAST_TREMBL) { a -> [a, a, a, a, a, a, a]}
 
 
+//Create channels from OBD files to retreive useful information
+OS2_GENES = Channel.fromPath(params.data.orthodb + "/odb10v0_OG2genes.tab")
+OS2_TAX_ID = Channel.fromPath(params.data.orthodb + "/odb10v0_OGs.tab")
+OS2_REFS = Channel.fromPath(params.data.orthodb + "/odb10v1_OG_xrefs.tab")
+
 // Get the input sequence filename and put it in a value Channel so we
 // can re-use it multiple times.
 matches = params.input.fasta_file =~ /.*\/(.*)/
 SEQUENCE_FILENAME = Channel.value(matches[0][1])
-
-// Create a channel consisting of the array of OrthoDB level IDs
-// to include in the analysis.
-ORTHODB_LEVELS_LIST = Channel.from(params.steps.orthodb.levels)
 
 // Create a channel indicating the type of blast to perform.
 if (params.input.type == "nuc") {
@@ -159,29 +161,6 @@ if (params.steps.interproscan.enable == true) {
     error "Error: the InterProScan data directory cannot be found: ${params.data.interproscan}. Please check the params.data.interproscan setting."
   }
 }
-
-/**
- * Retreives the list of species that should be searched for orthologs given
- * the levels provided by the user in the config file.
- */
-process orthdb_level2species {
-   label "orthdb_level2species"
-
-   input:
-     val level_id from ORTHODB_LEVELS_LIST
-
-   output:
-     stdout LEVELS_LIST_CSV
-
-   when:
-     params.steps.orthodb.enable == true
-
-  script:
-     """
-     orthodb_level2species.py ${level_id} ${params.data.orthodb}/odb10v0_level2species.tab
-     """
-}
-LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
 
 
 /**
@@ -455,4 +434,29 @@ process parse_dblast_orthodb {
      """
      parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
      """
+}
+
+/**
+ * Parses blast output and sorts through lookup tables to retrive orthologous group, taxonomic, and reference information.
+ */
+process identify_orthologous_groups{
+  publishDir "${params.output.dir}/orthodb", mode: "link"
+  label "python3"
+
+  input: 
+    file blast_txt from ORTHODB_BLASTX_TXT
+    file os2_genes from OS2_GENES
+    file os2_tax_id from OS2_TAX_ID
+    file os2_refs from OS2_REFS 
+
+  output:
+    file "*.txt"
+
+  when:
+    params.steps.orthodb.enable == true
+
+  script:
+    """
+    identify_orthologous_groups.py ${blast_txt} ${os2_genes} ${os2_tax_id} ${os2_refs} blast_ouput.txt
+    """
 }
