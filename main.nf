@@ -456,3 +456,22 @@ process parse_dblast_orthodb {
      parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
      """
 }
+
+/**
+ * Parses blast output against enzyme database for function prediction.
+ */
+process parse_dblast_sprot {
+   publishDir "${params.output.dir}/enzyme", mode: "link"
+   label "python3"
+
+   input:
+     file blast_xml from BLAST_SPROT_XML
+
+   output:
+     file "*.txt" into ENZYME_BLASTX_TXT
+
+   script:
+     """
+     parse_enzyme.py --xml ${blast_xml} --enzyme ${params.data.enzyme}/enzyme.dat --out ${blast_xml}.txt
+     """
+}

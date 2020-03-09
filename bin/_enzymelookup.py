@@ -85,8 +85,8 @@ class EnzymeLookup():
                Tuples that contain any matches found. Each tuple contains the given gene, given
                protein id, given protein name, matched EC id, and matched EC description.
         """
+        ret = []
         if name in self.__links:
-            ret = []
             for node in self.__links[name]:
                 ret.append((gene,id_,name,node["id"],node["de"]))
-            return ret
+        return ret
