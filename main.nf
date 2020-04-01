@@ -7,6 +7,7 @@
  *
  * Authors:
  *  + Stephen Ficklin
+ *  + Mitchell Greer
  *
  * Summary:
  *   A workflow for annotating Eukaryotic transcript sequences from whole genome
@@ -66,10 +67,6 @@ Channel.fromPath(params.input.fasta_file)
 // can re-use it multiple times.
 matches = params.input.fasta_file =~ /.*\/(.*)/
 SEQUENCE_FILENAME = Channel.value(matches[0][1])
-
-// Create a channel consisting of the array of OrthoDB level IDs
-// to include in the analysis.
-ORTHODB_LEVELS_LIST = Channel.from(params.steps.orthodb.levels)
 
 // Create a channel indicating the type of blast to perform.
 if (params.input.type == "nuc") {
@@ -159,29 +156,6 @@ if (params.steps.interproscan.enable == true) {
     error "Error: the InterProScan data directory cannot be found: ${params.data.interproscan}. Please check the params.data.interproscan setting."
   }
 }
-
-/**
- * Retreives the list of species that should be searched for orthologs given
- * the levels provided by the user in the config file.
- */
-process orthdb_level2species {
-   label "orthdb_level2species"
-
-   input:
-     val level_id from ORTHODB_LEVELS_LIST
-
-   output:
-     stdout LEVELS_LIST_CSV
-
-   when:
-     params.steps.orthodb.enable == true
-
-  script:
-     """
-     orthodb_level2species.py ${level_id} ${params.data.orthodb}/odb10v0_level2species.tab
-     """
-}
-LEVELS_LIST_CSV.splitCsv().flatten().set{ORTHODB_SPECIES_LIST}
 
 
 /**
@@ -429,30 +403,31 @@ process dblast_orthodb {
       --threads 1 \
       --query ${seqfile} \
       --db ${params.data.orthodb}/odb10_all_og.dmnd \
-      --out ${seqname}_vs_odb10_all_og.${blast_type}.xml \
+      --out ${seqname}_vs_orthodb.${blast_type}.xml \
       --evalue 1e-50 \
       --outfmt 5
     """
 }
 
 /**
- * Parses blast output against the orthdb blast databases and finds orthologs.
+ * Parses blast output and sorts through lookup tables to retrive orthologous group, taxonomic, and reference information.
  */
-process parse_dblast_orthodb {
-   publishDir "${params.output.dir}/orthodb", mode: "link"
-   label "python3"
+process identify_orthologous_groups{
+  publishDir "${params.output.dir}/orthodb", mode: "link"
+  label "python3"
 
-   input:
-     file blast_xml from ORTHODB_BLASTX_XML
+  input:
+    file blast_xml from ORTHODB_BLASTX_XML
+    val sequence_filename from SEQUENCE_FILENAME
 
-   output:
-     file "*.txt" into ORTHODB_BLASTX_TXT
+  output:
+    file "*.txt"
 
-   when:
-     params.steps.orthodb.enable == true
+  when:
+    params.steps.orthodb.enable == true
 
-   script:
-     """
-     parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
-     """
+  script:
+    """
+    identify_orthologous_groups.py ${blast_xml} ${params.data.orthodb} ${sequence_filename}.orthodb_orthologs.txt
+    """
 }
