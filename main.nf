@@ -63,11 +63,6 @@ Channel.fromPath(params.input.fasta_file)
        .separate(SEQS_FOR_IPRSCAN, SEQS_FOR_BLAST_NR, SEQS_FOR_BLAST_REFSEQ, SEQS_FOR_BLAST_SPROT,SEQS_FOR_ORTHODB, SEQS_FOR_BLAST_STRING, SEQS_FOR_BLAST_TREMBL) { a -> [a, a, a, a, a, a, a]}
 
 
-//Create channels from OBD files to retreive useful information
-OS2_GENES = Channel.fromPath(params.data.orthodb + "/odb10v0_OG2genes.tab")
-OS2_TAX_ID = Channel.fromPath(params.data.orthodb + "/odb10v0_OGs.tab")
-OS2_REFS = Channel.fromPath(params.data.orthodb + "/odb10v1_OG_xrefs.tab")
-
 // Get the input sequence filename and put it in a value Channel so we
 // can re-use it multiple times.
 matches = params.input.fasta_file =~ /.*\/(.*)/
@@ -408,32 +403,10 @@ process dblast_orthodb {
       --threads 1 \
       --query ${seqfile} \
       --db ${params.data.orthodb}/odb10_all_og.dmnd \
-      --out ${seqname}_vs_odb10_all_og.${blast_type}.xml \
+      --out ${seqname}_vs_orthodb.${blast_type}.xml \
       --evalue 1e-50 \
       --outfmt 5
     """
-}
-
-/**
- * Parses blast output against the orthdb blast databases and finds orthologs.
- */
-process parse_dblast_orthodb {
-   publishDir "${params.output.dir}/orthodb", mode: "link"
-   label "python3"
-
-   input:
-     file blast_xml from ORTHODB_BLASTX_XML
-
-   output:
-     file "*.txt" into ORTHODB_BLASTX_TXT
-
-   when:
-     params.steps.orthodb.enable == true
-
-   script:
-     """
-     parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
-     """
 }
 
 /**
@@ -443,11 +416,9 @@ process identify_orthologous_groups{
   publishDir "${params.output.dir}/orthodb", mode: "link"
   label "python3"
 
-  input: 
-    file blast_txt from ORTHODB_BLASTX_TXT
-    file os2_genes from OS2_GENES
-    file os2_tax_id from OS2_TAX_ID
-    file os2_refs from OS2_REFS 
+  input:
+    file blast_xml from ORTHODB_BLASTX_XML
+    val sequence_filename from SEQUENCE_FILENAME
 
   output:
     file "*.txt"
@@ -457,6 +428,6 @@ process identify_orthologous_groups{
 
   script:
     """
-    identify_orthologous_groups.py ${blast_txt} ${os2_genes} ${os2_tax_id} ${os2_refs} blast_ouput.txt
+    identify_orthologous_groups.py ${blast_xml} ${params.data.orthodb} ${sequence_filename}.orthodb_orthologs.txt
     """
 }
