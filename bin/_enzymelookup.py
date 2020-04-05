@@ -11,9 +11,9 @@ Contains the EnzymeLookup class.
 
 class EnzymeLookup():
     """
-    This is the enzyme lookup class. It is a reverse lookup table that loads an enzyme data from
-    from the path given to its initialize operator. In turn a find method is supplied that looks up
-    any matching names.
+    This is the enzyme lookup class. It is a reverse lookup table that loads
+    an enzyme data from the path given to its initialize operator. In turn a
+    find method is supplied that looks up any matching names.
     """
 
 
@@ -24,8 +24,9 @@ class EnzymeLookup():
 
     def __init__(self, path):
         """
-        Initializes this new enzyme lookup table with the given path to the enzyme data file. The
-        enzyme data file's ID, DE, and DR lines are loaded into this new table.
+        Initializes this new enzyme lookup table with the given path to the
+        enzyme data file. The enzyme data file's ID, DE, and DR lines are
+        loaded into this new table.
 
         Parameters
         ----------
@@ -70,23 +71,25 @@ class EnzymeLookup():
         Parameters
         ----------
         gene : string
-               The gene that is matched. This is only used to add to returned tuples and not matched
-               against.
+               The gene that is matched. This is only used to add to returned
+               tuples and not matched against.
         id_ : string
-              The protein id that is matched. This is only used to add to returned tuples and not
-              matched against.
+              The protein id that is matched. This is only used to add to
+              returned tuples and not matched against.
         name : string
-               The protein name that is matched. This is the value actually used to reverse lookup
-               any EC numbers and descriptions that contain this protein name.
+               The protein name that is matched. This is the value actually
+               used to reverse lookup any EC numbers and descriptions that
+               contain this protein name.
 
         Returns
         -------
         ret0 : list
-               Tuples that contain any matches found. Each tuple contains the given gene, given
-               protein id, given protein name, matched EC id, and matched EC description.
+               Tuples that contain any matches found. Each tuple contains the
+               given gene, given protein id, given protein name, matched EC id,
+               and matched EC description.
         """
         ret = []
         if name in self.__links:
             for node in self.__links[name]:
-                ret.append((gene,id_,name,node["id"],node["de"]))
+                ret.append((gene, id_, name, node["id"], node["de"]))
         return ret

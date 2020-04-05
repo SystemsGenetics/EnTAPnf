@@ -435,18 +435,19 @@ process identify_orthologous_groups{
 /**
  * Parses blast output against enzyme database for function prediction.
  */
-process parse_dblast_sprot {
-   publishDir "${params.output.dir}/enzyme", mode: "link"
+process find_ECnumbers {
+   publishDir "${params.output.dir}/sprot/", mode: "link"
    label "python3"
 
    input:
      file blast_xml from BLAST_SPROT_XML
+     val sequence_filename from SEQUENCE_FILENAME
 
    output:
      file "*.txt" into ENZYME_BLASTX_TXT
 
    script:
      """
-     parse_enzyme.py --xml ${blast_xml} --enzyme ${params.data.enzyme}/enzyme.dat --out ${blast_xml}.txt
+     parse_enzyme.py --xml ${blast_xml} --enzyme ${params.data.sprot}/enzyme.dat --out ${sequence_filename}.ECnumbers.txt
      """
 }
