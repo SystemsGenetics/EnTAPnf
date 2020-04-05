@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     # Reduce the list down to the best hit per query sequence.
     grp_q = results[['Query_id', 'Hit_id', 'Evalue', 'Identity']].groupby(by='Query_id')
-    best_hits = grp_q.apply(lambda x: x[x['Evalue'] == x['Evalue'].max()].iloc[0])
+    best_hits = grp_q.apply(lambda x: x[x['Evalue'] == x['Evalue'].min()].iloc[0])
 
     # Create the output dataframe
     outdf = pd.DataFrame(columns=['Gene_ID','OrthoDB_OG_ID','OG_Name','Tax_ID','Database', 'Term_ID', 'OG_Term_Genes'])

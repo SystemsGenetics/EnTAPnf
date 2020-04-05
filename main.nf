@@ -180,16 +180,16 @@ process interproscan {
     """
     #!/bin/bash -e
     # If this is kubernetes then hack a soft link for InterProScan's data
-    if [ "${workflow.profile}" == "k8s" ]; then
-      #EMPTY=""
-      #if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
-      #then
-      #    rm -fr /usr/local/interproscan/data
-      #    ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
-      #fi
-      # Call InterProScan on a single sequence.
-      echo "Hello!"
+    EMPTY=""
+    if [ -n \${INTERPROSCAN_DATA_DIR+EMPTY} ]
+    then
+        if [ "\${INTERPROSCAN_DATA_DIR}" != "/usr/local/interproscan/data" ] && [ "\${INTERPROSCAN_DATA_DIR}" != "" ]
+        then
+            rm -fr /usr/local/interproscan/data
+            ln -s \${INTERPROSCAN_DATA_DIR} /usr/local/interproscan/data
+        fi
     fi
+    # Call InterProScan on a single sequence.
     /usr/local/interproscan/interproscan.sh \
       -f TSV,XML \
       --goterms \
@@ -430,4 +430,24 @@ process identify_orthologous_groups{
     """
     identify_orthologous_groups.py ${blast_xml} ${params.data.orthodb} ${sequence_filename}.orthodb_orthologs.txt
     """
+}
+
+/**
+ * Parses blast output against enzyme database for function prediction.
+ */
+process find_ECnumbers {
+   publishDir "${params.output.dir}/sprot/", mode: "link"
+   label "python3"
+
+   input:
+     file blast_xml from BLAST_SPROT_XML
+     val sequence_filename from SEQUENCE_FILENAME
+
+   output:
+     file "*.txt" into ENZYME_BLASTX_TXT
+
+   script:
+     """
+     parse_enzyme.py --xml ${blast_xml} --enzyme ${params.data.sprot}/enzyme.dat --out ${sequence_filename}.ECnumbers.txt
+     """
 }

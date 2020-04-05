@@ -171,7 +171,7 @@ class HitTarget(object):
         })
 
         # Remove some unwanted columns
-        results = results.drop('Query_def', 1)
+        #results = results.drop('Query_def', 1)
 
         # Return the final resulting data frame.
         return results
