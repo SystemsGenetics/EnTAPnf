@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+"""
+This is the parse protein protein script.
+"""
 import argparse
 import os
 import sqlite3
@@ -5,6 +9,13 @@ import sys
 from parse_blastxml import parseBLASTXMLfile
 
 
+
+
+
+
+
+
+### __SCRIPT__ ###
 def find_matches(path,protein):
     sql = "SELECT * FROM protein_links_full WHERE `protein1` = ? OR `protein2` = ?;"
     i = 0
@@ -35,7 +46,6 @@ hitLens = data["Hit_len"]
 eValues = data["Evalue"]
 results = {}
 for (queryDef,hitId,hitLen,eValue) in zip(queryDefs,hitIds,hitLens,eValues):
-    print(hitId)
     parts = hitId.split(".")
     if parts and parts[0]==args.speciesId:
         if queryDef not in results:
