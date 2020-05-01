@@ -45,29 +45,7 @@ class EnzymeLookup():
                memory.
         """
         self.__links = {}
-        with open(path,"r") as ifile:
-            READ_NODE = 0
-            READ_LINKS = 1
-            state = READ_LINKS
-            node = None
-            while True:
-                line = ifile.readline()
-                if not line:
-                    break
-                if state == READ_NODE:
-                    if line[:2] == "DE":
-                        node["de"] = line[5:-1]
-                        state = READ_LINKS
-                elif state == READ_LINKS:
-                    if line[:2] == "DR":
-                        for segment in line[5:-1].split():
-                            if segment.endswith(";"):
-                                l = self.__links.get(segment[:-1],[])
-                                l.append(node)
-                                self.__links[segment[:-1]] = l
-                    elif line[:2] == "ID":
-                        node = {"id": line[5:-1], "de": None}
-                        state = READ_NODE
+        self.__loadReverse_(path)
 
 
     ####################
@@ -109,6 +87,49 @@ class EnzymeLookup():
             for node in self.__links[name]:
                 ret.append((gene, id_, name, node["id"], node["de"]))
         return ret
+
+
+    #####################
+    # PRIVATE - Methods #
+    #####################
+
+
+    def __loadReverse_(
+        self
+        ,path
+        ):
+        """
+        Loads this instance's lookup table from the given enzyme data file path.
+
+        Parameters
+        ----------
+        path : string
+               File path to the enzyme data file this new table loads into
+               memory.
+        """
+        with open(path,"r") as ifile:
+            READ_NODE = 0
+            READ_LINKS = 1
+            state = READ_LINKS
+            node = None
+            while True:
+                line = ifile.readline()
+                if not line:
+                    break
+                if state == READ_NODE:
+                    if line[:2] == "DE":
+                        node["de"] = line[5:-1]
+                        state = READ_LINKS
+                elif state == READ_LINKS:
+                    if line[:2] == "DR":
+                        for segment in line[5:-1].split():
+                            if segment.endswith(";"):
+                                l = self.__links.get(segment[:-1],[])
+                                l.append(node)
+                                self.__links[segment[:-1]] = l
+                    elif line[:2] == "ID":
+                        node = {"id": line[5:-1], "de": None}
+                        state = READ_NODE
 
 
 
