@@ -451,3 +451,23 @@ process find_ECnumbers {
      parse_enzyme.py --xml ${blast_xml} --enzyme ${params.data.sprot}/enzyme.dat --out ${sequence_filename}.ECnumbers.txt
      """
 }
+
+/**
+ * Parses blast output against protein protein interaction.
+ */
+process find_proteinprotein {
+   publishDir "${params.output.dir}/proteinprotein/", mode: "link"
+   label "python3"
+
+   input:
+     file blast_xml from BLAST_STRING_XML
+     val sequence_filename from SEQUENCE_FILENAME
+
+   output:
+     file "*.graphml" into PROTEINPROTEIN_BLASTX_TXT
+
+   script:
+     """
+     parse_proteinprotein.py --xml ${blast_xml} --db ${params.data.string}/protein --species ${params.input.taxonomy_ID} --out ${sequence_filename}.graphml
+     """
+}
