@@ -73,7 +73,7 @@ def initializeDownloadTasks():
             "dir": "nr"
             ,"script": [
                 "wget --backups=1 ftp://ftp.ncbi.nlm.nih.gov/blast/db/FASTA/nr.gz"
-                ,"gunzip nr"
+                ,"gunzip -f nr"
                 ,"diamond makedb --threads 4 --in nr -d nr"
             ]
         }
@@ -81,7 +81,7 @@ def initializeDownloadTasks():
             "dir": "refseq"
             ,"script": [
                 "wget --backups=1 -r -A '*.protein.faa.gz' ftp://ftp.ncbi.nlm.nih.gov/refseq/release/plant/"
-                ,"gunzip ./ftp.ncbi.nlm.nih.gov/refseq/release/plant/*.gz"
+                ,"gunzip -f ./ftp.ncbi.nlm.nih.gov/refseq/release/plant/*.gz"
                 ,"cat ./ftp.ncbi.nlm.nih.gov/refseq/release/plant/*.faa > refseq_plant.protein.faa"
                 ,"rm -rf ./ftp.ncbi.nlm.nih.gov/"
                 ,"diamond makedb --threads 4 --in refseq_plant.protein.faa -d refseq_plant.protein"
@@ -91,19 +91,19 @@ def initializeDownloadTasks():
             "dir": "orthodb"
             ,"script": [
                 "wget --backups=1 https://v101.orthodb.org/download/odb10v1_level2species.tab.gz"
-                ,"gunzip odb10v1_level2species.tab.gz"
+                ,"gunzip -f odb10v1_level2species.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_OG2genes.tab.gz"
-                ,"gunzip odb10v1_OG2genes.tab.gz"
+                ,"gunzip -f odb10v1_OG2genes.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_OGs.tab.gz"
-                ,"gunzip odb10v1_OGs.tab.gz"
+                ,"gunzip -f odb10v1_OGs.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_all_og_fasta.tab.gz"
-                ,"gunzip odb10v1_all_og_fasta.tab.gz"
+                ,"gunzip -f odb10v1_all_og_fasta.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_OG_xrefs.tab.gz"
-                ,"gunzip odb10v1_OG_xrefs.tab.gz"
+                ,"gunzip -f odb10v1_OG_xrefs.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_species.tab.gz"
-                ,"gunzip odb10v1_species.tab.gz"
+                ,"gunzip -f odb10v1_species.tab.gz"
                 ,"wget https://v101.orthodb.org/download/odb10v1_gene_xrefs.tab.gz"
-                ,"gunzip odb10v1_gene_xrefs.tab.gz"
+                ,"gunzip -f odb10v1_gene_xrefs.tab.gz"
                 ,"/Annotater/bin/index_orthodb.py ."
                 ,"diamond makedb --threads 4 --in odb10v1_all_og_fasta.tab -d odb10v1_all_og"
             ]
@@ -112,11 +112,11 @@ def initializeDownloadTasks():
             "dir": "string"
             ,"script": [
                 "wget --backups=1 https://stringdb-static.org/download/protein.sequences.v11.0.fa.gz"
-                ,"gunzip protein.sequences.v11.0.fa.gz"
+                ,"gunzip -f protein.sequences.v11.0.fa.gz"
                 ,"wget https://stringdb-static.org/download/protein.links.full.v11.0.txt.gz"
-                ,"gunzip protein.links.full.v11.0.txt.gz"
+                ,"gunzip -f protein.links.full.v11.0.txt.gz"
                 ,"wget https://stringdb-static.org/download/protein.info.v11.0.txt.gz"
-                ,"gunzip protein.info.v11.0.txt.gz"
+                ,"gunzip -f protein.info.v11.0.txt.gz"
                 ,"/Annotater/bin/index_string.py --links protein.links.full.v11.0.txt --info protein.info.v11.0.txt --out protein"
                 ,"diamond makedb --threads 4 --in protein.sequences.v11.0.fa -d protein.sequences.v11.0"
             ]
@@ -125,7 +125,7 @@ def initializeDownloadTasks():
             "dir": "uniprot_sprot"
             ,"script": [
                 "wget --backups=1 ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz"
-                ,"gunzip uniprot_sprot.fasta.gz"
+                ,"gunzip -f uniprot_sprot.fasta.gz"
                 ,"wget ftp://ftp.expasy.org/databases/enzyme/enzyme.dat"
                 ,"diamond makedb --threads 4 --in uniprot_sprot.fasta -d uniprot_sprot"
             ]
@@ -134,7 +134,7 @@ def initializeDownloadTasks():
             "dir": "uniprot_trembl"
             ,"script": [
                 "wget --backups=1 ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz"
-                ,"gunzip uniprot_trembl.fasta.gz"
+                ,"gunzip -f uniprot_trembl.fasta.gz"
                 ,"diamond makedb --threads 4 --in uniprot_trembl.fasta -d uniprot_trembl"
             ]
         }
