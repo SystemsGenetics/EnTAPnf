@@ -154,17 +154,31 @@ def listTasks():
 
 
 
-def loadSession():
+def loadSession(
+    rstList
+    ):
     """
     Loads the global session state from the session JSON file if it exists, else
-    it loads a new default session state.
+    it loads a new default session state. Resets any task from the given command
+    line argument string.
+
+    Parameters
+    ----------
+    rstList : string
+              Command line reset argument string that provides a list of comma
+              delimited task names that is reset.
     """
     global sessionState
-    if os.path.isfile("session.json"):
+    if not os.path.isfile("session.json") or rstList=="ALL":
+        sessionState = defaultState()
+    else:
         with open("session.json","r") as ifile:
             sessionState = json.loads(ifile.read())
-    else:
-        sessionState = defaultState()
+        l = set((s.strip() for s in rstList.split(",") if s))
+        for key in l:
+            if key in sessionState:
+                sessionState[key] = 0
+        
 
 
 
@@ -223,15 +237,15 @@ def saveSession():
 ### __SCRIPT__ ###
 initializeDownloadTasks()
 parser = argparse.ArgumentParser()
-parser.add_argument('--list',dest='isList',action="store_true")
-parser.add_argument('--tasks',dest='whitelist',nargs="?",default=",".join(DOWNLOAD_TASKS.keys()))
+parser.add_argument("--list",dest="isList",action="store_true")
+parser.add_argument("--tasks",dest="whitelist",nargs="?",default=",".join(DOWNLOAD_TASKS.keys()))
+parser.add_argument("--reset",dest="rstList",nargs="?",default="")
 args = parser.parse_args()
 whitelist = set((s.strip() for s in args.whitelist.split(",") if s))
-print(args.isList)
 if args.isList:
     listTasks()
 else:
-    loadSession()
+    loadSession(args.rstList)
     try:
         for name in sessionState:
             if name in whitelist:
