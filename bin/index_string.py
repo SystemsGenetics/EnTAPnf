@@ -55,6 +55,8 @@ def makeInfoDB(
     ret0 : sqlite3.Connection
            A connection to the new database.
     """
+    if os.path.exists(path):
+        os.remove(path)
     conn = sqlite3.connect(path)
     sql = (
         "CREATE TABLE IF NOT EXISTS protein_info ("
