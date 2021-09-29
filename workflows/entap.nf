@@ -75,6 +75,15 @@ blastx_orthodb_options.publish_dir = 'blastx_vs_orthodb'
 include { DIAMOND_BLASTP as blastp_orthodb } from '../modules/nf-core/modules/diamond/blastp/main.nf' addParams( options: blastp_orthodb_options )
 include { DIAMOND_BLASTX as blastx_orthodb } from '../modules/nf-core/modules/diamond/blastx/main.nf' addParams( options: blastx_orthodb_options )
 
+def interproscan_nuc_options = modules['interproscan'].clone()
+def interproscan_pep_options = modules['interproscan'].clone()
+interproscan_nuc_options.args = interproscan_nuc_options.args + "--seqtype n "
+interproscan_nuc_options.args = interproscan_nuc_options.args.replace("/--applications '.*?'", "---applications ${params.ipr_apps}")
+interproscan_pep_options.args = interproscan_pep_options.args.replace("/--applications '.*?'", "---applications ${params.ipr_apps}")
+include { INTERPROSCAN as interproscan_nuc } from '../modules/local/modules/interproscan/main.nf' addParams( options: interproscan_nuc_options )
+include { INTERPROSCAN as interproscan_pep } from '../modules/local/modules/interproscan/main.nf' addParams( options: interproscan_pep_options )
+
+
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -98,7 +107,9 @@ workflow ENTAP {
         .collect()
         .set { ch_software_versions }
 
+    //
     // Split the FASTA file into groups of size 10.
+    //
     ch_split_seqs = Channel
         .fromPath(params.input)
         .splitFasta(by: 10, file: true)
@@ -119,7 +130,7 @@ workflow ENTAP {
             orthodb: [[id: it[0].id  + '_vs_orthodb'], it[1]]
             string: [[id: it[0].id  + '_vs_string'], it[1]]
             trembl: [[id: it[0].id  + '_vs_trembl'], it[1]]
-            interproscan: it
+            ipr: it
         }
     //ch_split_seqs.sprot.view()
 
@@ -127,7 +138,9 @@ workflow ENTAP {
         ch_software_versions.map { it }.collect()
     )
 
+    //
     // BLAST sequences against ExPASy SwissProt using Diamond.
+    //
     if (params.data_sprot) {
         db = [ file(params.data_sprot, checkIfExists: true) ]
         if (params.seq_type == 'pep') {
@@ -138,7 +151,9 @@ workflow ENTAP {
         }
     }
 
+    //
     // BLAST sequences against NCBI nr using Diamond.
+    //
     if (params.data_nr) {
         db = [ file(params.data_sprot, checkIfExists: true) ]
         if (params.seq_type == 'pep') {
@@ -149,7 +164,9 @@ workflow ENTAP {
         }
     }
 
+    //
     // BLAST sequences against NCBI refseq using Diamond.
+    //
     if (params.data_refseq) {
         db = [ file(params.data_sprot, checkIfExists: true) ]
         if (params.seq_type == 'pep') {
@@ -160,7 +177,9 @@ workflow ENTAP {
         }
     }
 
+    //
     // BLAST sequences against OrthoDB using Diamond.
+    //
     if (params.data_orthodb) {
         db = [ file(params.data_orthodb, checkIfExists: true) ]
         if (params.seq_type == 'pep') {
@@ -171,6 +190,14 @@ workflow ENTAP {
         }
     }
 
+    if (params.data_ipr) {
+        if (params.seq_type == 'pep') {
+            interproscan_pep(ch_split_seqs.ipr)
+        }
+        if (params.seq_type == 'nuc') {
+            interproscan_nuc(ch_split_seqs.ipr)
+        }
+    }
 }
 
 /*
