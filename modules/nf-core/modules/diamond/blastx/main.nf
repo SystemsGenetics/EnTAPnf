@@ -1,8 +1,8 @@
 // Import generic module functions
-include { initOptions; saveFiles; getSoftwareName } from './functions'
+include { initOptions; saveFiles; getSoftwareName; getProcessName } from './functions'
 
 params.options = [:]
-options    = initOptions(params.options)
+options        = initOptions(params.options)
 
 process DIAMOND_BLASTX {
     tag "$meta.id"
@@ -25,20 +25,26 @@ process DIAMOND_BLASTX {
     path  db
 
     output:
-    tuple val(meta), path('*.diamond_blastx.txt'), emit: txt
-    path '*.version.txt', emit: version
+    tuple val(meta), path('*.txt'), emit: txt
+    path "versions.yml"           , emit: version
 
     script:
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     DB=`find -L ./ -name "*.dmnd" | sed 's/.dmnd//'`
-    diamond blastx \\
+
+    diamond \\
+        blastx \\
         --threads $task.cpus \\
         --db \$DB \\
         --query $fasta \\
         $options.args \\
-        --out ${prefix}.diamond_blastx.txt
-    echo \$(diamond --version 2>&1) | tail -n 1 | sed 's/^diamond version //' > ${software}.version.txt
+        --out ${prefix}.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    ${getProcessName(task.process)}:
+        ${getSoftwareName(task.process)}: \$(diamond --version 2>&1 | tail -n 1 | sed 's/^diamond version //')
+    END_VERSIONS
     """
 }
