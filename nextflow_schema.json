@@ -14,31 +14,37 @@
             "properties": {
                 "data_ipr": {
                     "type": "string",
-                    "description": "The location of the InterProScan data directory",
+                    "description": "The location of the InterProScan data directory.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_nr": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the NCBI NR database.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_trembl": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the ExPASy trembl database.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_string": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the String protein.sequences file.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_orthodb": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the OrthoDB database.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_sprot": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the ExPASy uniprot swissprot database.",
                     "fa_icon": "fas fa-database"
                 },
                 "data_refseq": {
                     "type": "string",
+                    "description": "The location of the Diamond index of the NCBI refseq database.",
                     "fa_icon": "fas fa-database"
                 }
             }
