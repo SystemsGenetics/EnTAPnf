@@ -10,10 +10,13 @@
 
 ## Pipeline tools
 
-* [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+* [EnTAP](https://entap.readthedocs.io/en/latest/)
+    > Hart AJ, Ginzburg S, Xu M, et al. EnTAP: Bringing faster and smarter functional annotation to non-model eukaryotic transcriptomes. Mol Ecol Resour. 2020;20:591–604. https://doi.org/10.1111/1755-0998.13106
+* [Diamond](https://github.com/bbuchfink/diamond)
+    > Buchfink B, Xie C, Huson DH. "Fast and sensitive protein alignment using DIAMOND", Nature Methods 12, 59-60 (2015). doi:10.1038/nmeth.3176
 
-* [MultiQC](https://www.ncbi.nlm.nih.gov/pubmed/27312411/)
-    > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+* [InterProScan](https://www.ncbi.nlm.nih.gov/pubmed/27312411/)
+    > Philip Jones, David Binns, Hsin-Yu Chang, Matthew Fraser, Weizhong Li, Craig McAnulla, Hamish McWilliam, John Maslen, Alex Mitchell, Gift Nuka, Sebastien Pesseat, Antony F. Quinn, Amaia Sangrador-Vegas, Maxim Scheremetjew, Siew-Yit Yong, Rodrigo Lopez, Sarah Hunter. "InterProScan 5: genome-scale protein function classification" Bioinformatics (2014), PMID: 24451626
 
 ## Software packaging/containerisation tools
 
