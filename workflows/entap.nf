@@ -264,7 +264,7 @@ workflow ENTAP {
                     xml: it.getFileName().toString().endsWith(".xml")
                 }
                 .set { interproscan_pep_out }
-            interproscan_combine(interproscan_pep_out.tsv, sequence_filename)
+            interproscan_combine(interproscan_pep_out.tsv.collect(), sequence_filename)
         }
         if (params.seq_type == 'nuc') {
             interproscan_nuc(ch_split_seqs.ipr, fromPath(params.input))
@@ -276,7 +276,7 @@ workflow ENTAP {
                     xml: it.getFileName().toString().endsWith(".xml")
                 }
                 .set { interproscan_pep_out }
-            interproscan_combine(interproscan_nuc_out.tsv, sequence_filename)
+            interproscan_combine(interproscan_nuc_out.tsv.collect(), sequence_filename)
         }
 
 
