@@ -1,8 +1,3 @@
-// Import generic module functions
-include { initOptions; saveFiles; getSoftwareName; getProcessName } from './functions'
-
-params.options = [:]
-options        = initOptions(params.options)
 
 process FIND_ORTHO_GROUPS {
     publishDir "${params.outdir}/ortho_groups_orthodb",
@@ -16,7 +11,6 @@ process FIND_ORTHO_GROUPS {
 
     output:
     file "*.txt"
-    path "versions.yml"           , emit: version
 
     script:
     """
@@ -24,10 +18,5 @@ process FIND_ORTHO_GROUPS {
       ${blast_xml} \
       ${params.data_orthodb} \
       ${sequence_filename}.orthodb_orthologs.txt
-
-    cat <<-END_VERSIONS > versions.yml
-    ${getProcessName(task.process)}:
-        ${getSoftwareName(task.process)}: 'EnTAP-nf internal script')
-    END_VERSIONS
     """
 }
