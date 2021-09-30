@@ -159,7 +159,7 @@ workflow ENTAP {
     // BLAST sequences against ExPASy SwissProt using Diamond.
     //
     if (params.data_sprot) {
-        db = [ file(params.data_sprot, checkIfExists: true) ]
+        db = [ file(params.data_sprot + '/uniprot_sprot.dmnd', checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_sprot(ch_split_seqs.sprot, db)
             blastp_sprot.out.txt
@@ -181,7 +181,7 @@ workflow ENTAP {
     // BLAST sequences against ExPASy tembl using Diamond.
     //
     if (params.data_trembl) {
-        db = [ file(params.data_trembl, checkIfExists: true) ]
+        db = [ file(params.data_trembl + "/uniprot_trembl.dmnd", checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_data_trembl(ch_split_seqs.data_trembl, db)
         }
@@ -194,7 +194,7 @@ workflow ENTAP {
     // BLAST sequences against NCBI nr using Diamond.
     //
     if (params.data_nr) {
-        db = [ file(params.data_sprot, checkIfExists: true) ]
+        db = [ file(params.data_sprot + "/nr.dmnd", checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_nr(ch_split_seqs.sprot, db)
         }
@@ -207,7 +207,7 @@ workflow ENTAP {
     // BLAST sequences against NCBI refseq using Diamond.
     //
     if (params.data_refseq) {
-        db = [ file(params.data_sprot, checkIfExists: true) ]
+        db = [ file(params.data_refseq + "/refseq_plant.protein.dmnd", checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_refseq(ch_split_seqs.refseq, db)
         }
