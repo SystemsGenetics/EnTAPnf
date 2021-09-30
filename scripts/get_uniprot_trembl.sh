@@ -12,4 +12,4 @@ wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/c
 gunzip uniprot_trembl.fasta.gz
 
 # Index the file for BLAST
-docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in uniprot_trembl.fasta -d uniprot_trembl"
+docker run -v ${PWD}:/EnTAP/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /EnTAP/data; diamond makedb --threads 4 --in uniprot_trembl.fasta -d uniprot_trembl"

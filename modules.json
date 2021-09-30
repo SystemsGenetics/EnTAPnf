@@ -1,0 +1,17 @@
+{
+    "name": "systemsgenetics/entap",
+    "homePage": "https://github.com/systemsgenetics/entap",
+    "repos": {
+        "nf-core/modules": {
+            "diamond/blastp": {
+                "git_sha": "906577873b66253b0d244871bfec2eeeaff73053"
+            },
+            "diamond/blastx": {
+                "git_sha": "906577873b66253b0d244871bfec2eeeaff73053"
+            },
+            "diamond/makedb": {
+                "git_sha": "906577873b66253b0d244871bfec2eeeaff73053"
+            }
+        }
+    }
+}
