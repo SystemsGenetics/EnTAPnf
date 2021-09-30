@@ -1,82 +1,109 @@
-# ![nf-core/entap](docs/images/nf-core-entap_logo.png)
+# ![systemsgenetics/entap-nf](docs/images/ENTAP_white.jpg) EnTAP-nf
 
-[![GitHub Actions CI Status](https://github.com/nf-core/entap/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/entap/actions?query=workflow%3A%22nf-core+CI%22)
-[![GitHub Actions Linting Status](https://github.com/nf-core/entap/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/entap/actions?query=workflow%3A%22nf-core+linting%22)
+[![GitHub Actions CI Status](https://github.com/systemsgenetics/entap-nf/workflows/nf-core%20CI/badge.svg)](https://github.com/systemsgenetics/entap-nf/actions?query=workflow%3A%22nf-core+CI%22)
+[![GitHub Actions Linting Status](https://github.com/systemsgenetics/entap-nf/workflows/nf-core%20linting/badge.svg)](https://github.com/systemsgenetics/entap-nf/actions?query=workflow%3A%22nf-core+linting%22)
 [![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/entap/results)
 [![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.04.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23entap-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/entap)
-[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)
-[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
 
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-**nf-core/entap** is a bioinformatics best-practice analysis pipeline for The Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP) is designed to improve the accuracy, speed, and flexibility of functional gene annotation for both genomes and de novo assembled transcriptomes in non-model eukaryotes.
+The [Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP)]https://entap.readthedocs.io/en/latest/) is designed to improve the accuracy, speed, and flexibility of functional gene annotation for both genomes and de novo assembled transcriptomes in non-model eukaryotes.  
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
+The pipeline exutes EnTAP using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
-<!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
-On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/entap/results).
+### What EnTAP-nf does?
+This repository provides a pipeline that does the following:
+
+1.  Generates bulk input data for EnTAP:
+    - Supports BLAST results vs NCBI nr, ExPASy SwissProt, ExPASy Tremble, NCBI RefSeq
+    - Executes InterProScan
+2.  Executes EnTAP by providing the bulk data input.
+
+### When should you use the EnTAP-nf pipeline?
+
+EnTAP can run in a stand-alone manner and produce good results when the species is closely related to other species with high quality annotations in the [EggNOG](http://eggnog5.embl.de/#/app/home) database.  Otherwise, more information is needed. While EnTAP does perform [Diamand blast](https://github.com/bbuchfink/diamond) on a large genome or transcriptome, other tools such as [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/) can be very time consuming to run on a stand alone machine.  
+
+This workflow allows you to use a high-performance cluster (HPC), Kubernetes cluster or cloud computing resources to pre-compute the bulk data needed by EnTAP.
+
+#### Protein-Protein Interaction Data
+
+EnTAP-nf can also provie additional information such as potential protein-protein interactions through alignment with the orthologs provided in the [STRING](https://string-db.org/) database.  
+
+#### Integration with Tripal
+
+[Tripal](http://tripal.info) is an open-source toolkit for the construction of online genome repositories.  Tripal provides infrastructure for genome databases around the world and these sites often need to refresh the functional annotations on the genomes they provide. EnTAP-nf provides an easy way to allow these site to generate updated bulk data for upload to a Tripal site as well as to run EnTAP for high-quality in-silico annotations.
 
 ## Pipeline summary
 
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
-
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Homology searching against specified databases using Diamond BLAST QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)). Supported databases include:
+    - NCBI nr
+    - NCBI RefSeq
+    - ExPASy SwissProt
+    - ExPASy Trembl
+    - STRING database
+2. Execution of [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/)
 
 ## Quick Start
 
+1. Download databases. EnTAP-nf must have available the databases. These can take quite a while to download and can consume large amounts of storage.  Use the bash scripts in the `scripts` folder to retrieve and index the databases prior to using this workflow.
+
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
 
-2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility ([`Conda`](https://conda.io/miniconda.html) is currently not supported); see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles)),
 
 3. Download the pipeline and test it on a minimal dataset with a single command:
 
     ```console
-    nextflow run nf-core/entap -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run systemsgenetics/entap-nf -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
     ```
 
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
     > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
-    > * If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
+
 
 4. Start running your own analysis!
 
     <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
 
     ```console
-    nextflow run nf-core/entap -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input samplesheet.csv --genome GRCh37
+    nextflow run systemsgenetics/entap-nf \
+      -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> \
+      --batch_size 100 \
+      --input <fasta file> \
+      --data_sprot <directory with swissprot diamond index> \
+      --data_refseq <directory with refseq diamond index> \
+      --data_ipr <directory with InterProScan data> \
+      --max_cpus 10 \
+      --max_memory 6GB
+
     ```
+- The `--batch_size` arguments indicates the number of sequences to process in each batch.
+- It is recommended if using NCBI nr to set a large enough `--max_memory` size.
 
 ## Documentation
 
-The nf-core/entap pipeline comes with documentation about the pipeline [usage](https://nf-co.re/entap/usage), [parameters](https://nf-co.re/entap/parameters) and [output](https://nf-co.re/entap/output).
+The systemsgenetics/entap-nf pipeline has full online [documentation](https://entap-nf.readthedocs.io/en/latest/).
 
 ## Credits
 
-nf-core/entap was originally written by Stephen Ficklin.
+systemsgenetics/entap-nf was originally the AnnoTater workflow written by Stephen Ficklin, Josh Burns, Mitch Greer and Sai Oruganti. The team joined forces with the [EnTAP](https://github.com/harta55/EnTAP) team to consolidate efforts and support tool development for EnTAP.
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+Development of EnTAP-nf was funded by the U.S. National Science Foundation Award #1659300. It was funded separately from EnTAP stand-alone tool. Please see the [EnTAP](https://entap.readthedocs.io/en/latest/) documentation for its funding sources.
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
-For further information or help, don't hesitate to get in touch on the [Slack `#entap` channel](https://nfcore.slack.com/channels/entap) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citations
 
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use  nf-core/entap for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+EnTAP-nf is currently unpublished. For now, please use the GitHub URL when referencing.
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
