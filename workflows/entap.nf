@@ -196,10 +196,10 @@ workflow ENTAP {
     if (params.data_nr) {
         db = [ file(params.data_nr + "/nr.dmnd", checkIfExists: true) ]
         if (params.seq_type == 'pep') {
-            blastp_nr(ch_split_seqs.sprot, db)
+            blastp_nr(ch_split_seqs.nr, db)
         }
         if (params.seq_type == 'nuc') {
-            blastx_nr(ch_split_seqs.sprot, db)
+            blastx_nr(ch_split_seqs.nr, db)
         }
     }
 
