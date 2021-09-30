@@ -90,9 +90,9 @@ The systemsgenetics/entap-nf pipeline has full online [documentation](https://en
 
 ## Credits
 
-systemsgenetics/entap-nf was originally the AnnoTater workflow written by Stephen Ficklin, Josh Burns, Mitch Greer and Sai Oruganti. The team joined forces with the [EnTAP](https://github.com/harta55/EnTAP) team to consolidate efforts and support tool development for EnTAP.
+EnTAP-nf was originally named AnnoTater and was written by the [Ficklin Computational Biology Team](http://ficklinlab.cahnrs.wsu.edu/) at [Washington State University](http://www.wsu.edu). Originally it was anticipated that it would provide very similar functionality as EnTAP, developed by the [Wegrzyn Plant Computational Genomics Lab](http://plantcompgenomics.com/) at the [University of Connecticut](http://www.uconn.edu). Rather than develop a competing workflow, AnnoTater was renamed to EnTAP-nf and incorporates EnTAP to provide the high-quality in-silico annotations. EnTAP-nf brings scalability to EnTAP.
 
-Development of EnTAP-nf was funded by the U.S. National Science Foundation Award #1659300. It was funded separately from EnTAP stand-alone tool. Please see the [EnTAP](https://entap.readthedocs.io/en/latest/) documentation for its funding sources.
+Development of EnTAP-nf was funded by the U.S. National Science Foundation (NSF) Award [#1659300](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1659300&HistoricalAwards=false). It was funded separately from the EnTAP stand-alone tool. Please see the [EnTAP](https://entap.readthedocs.io/en/latest/) documentation for its funding sources.
 
 
 ## Contributions and Support
