@@ -82,6 +82,12 @@
                     "description": "The NCBI Taxonomy ID for the species.",
                     "fa_icon": "fab fa-gitter"
                 },
+                "batch_size": {
+                    "type": "number",
+                    "description": "The number of sequences to include per batch.",
+                    "default" : 5,
+                    "fa_icon": "fab fa-gitter"
+                },
                 "seq_type": {
                     "type": "string",
                     "default": "pep",

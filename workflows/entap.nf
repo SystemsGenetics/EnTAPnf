@@ -83,6 +83,7 @@ interproscan_pep_options.args = interproscan_pep_options.args.replace("/--applic
 include { INTERPROSCAN as interproscan_nuc } from '../modules/local/modules/interproscan/main.nf' addParams( options: interproscan_nuc_options )
 include { INTERPROSCAN as interproscan_pep } from '../modules/local/modules/interproscan/main.nf' addParams( options: interproscan_pep_options )
 
+include { INTERPROSCAN_COMBINE as interproscan_combine } from '../modules/local/interproscan_combine.nf'
 
 /*
 ========================================================================================
@@ -112,11 +113,10 @@ workflow ENTAP {
     //
     ch_split_seqs = Channel
         .fromPath(params.input)
-        .splitFasta(by: 10, file: true)
+        .splitFasta(by: params.batch_size, file: true)
         // Add an ID for each split file which is essential the file name
         .map {
-            matches = it =~ /.*\/(.*)/
-            [[id: matches[0][1]], it]
+            [[id: it.getFileName()], it]
         }
         // Because we're using Diamond against many different databases
         // we need to add a quantifier to the ID to indicate the database
@@ -190,13 +190,38 @@ workflow ENTAP {
         }
     }
 
+    //
+    // InterProScan
+    //
     if (params.data_ipr) {
+        sequence_filename =  params.input.replaceFirst(/^.*\/(.*)$/, '$1')
+
         if (params.seq_type == 'pep') {
             interproscan_pep(ch_split_seqs.ipr)
+            interproscan_pep.out.outfiles
+                .map { it[1] }
+                .flatten()
+                .branch {
+                    tsv: it.getFileName().toString().endsWith(".tsv")
+                    xml: it.getFileName().toString().endsWith(".xml")
+                }
+                .set { interproscan_pep_out }
+            interproscan_combine(interproscan_pep_out.tsv, sequence_filename)
         }
         if (params.seq_type == 'nuc') {
-            interproscan_nuc(ch_split_seqs.ipr)
+            interproscan_nuc(ch_split_seqs.ipr, fromPath(params.input))
+            interproscan_nuc.out.outfiles
+                .map { it[1] }
+                .flatten()
+                .branch {
+                    tsv: it.getFileName().toString().endsWith(".tsv")
+                    xml: it.getFileName().toString().endsWith(".xml")
+                }
+                .set { interproscan_pep_out }
+            interproscan_combine(interproscan_nuc_out.tsv, sequence_filename)
         }
+
+
     }
 }
 
