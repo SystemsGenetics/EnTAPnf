@@ -194,7 +194,7 @@ workflow ENTAP {
     // BLAST sequences against NCBI nr using Diamond.
     //
     if (params.data_nr) {
-        db = [ file(params.data_sprot + "/nr.dmnd", checkIfExists: true) ]
+        db = [ file(params.data_nr + "/nr.dmnd", checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_nr(ch_split_seqs.sprot, db)
         }
