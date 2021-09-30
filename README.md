@@ -13,7 +13,7 @@ The [Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP)](https://ent
 
 ![systemsgenetics/entap-nf](docs/images/ENTAP_white_250w.jpg)
 
-The pipeline executes EnTAP using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
+EnTAP-nf is a pipeline that executes EnTAP using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
 ### What EnTAP-nf does?
 This repository provides a pipeline that does the following:
