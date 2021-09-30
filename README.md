@@ -25,13 +25,13 @@ This repository provides a pipeline that does the following:
 
 ### When should you use the EnTAP-nf pipeline?
 
-EnTAP can run in a stand-alone manner and produce good results when the species is closely related to other species with high quality annotations in the [EggNOG](http://eggnog5.embl.de/#/app/home) database.  Otherwise, more information is needed. While EnTAP does perform [Diamand blast](https://github.com/bbuchfink/diamond) on a large genome or transcriptome, other tools such as [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/) can be very time consuming to run on a stand alone machine.  
+EnTAP can run in a stand-alone manner and produce good results when the species is closely related to other species with high quality annotations in the [EggNOG](http://eggnog5.embl.de/#/app/home) database.  Otherwise, more information is needed. While EnTAP does perform [Diamond](https://github.com/bbuchfink/diamond) blast on a large genome or transcriptome, other tools such as [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/) can be very time consuming to run on a stand alone machine.  
 
 This workflow allows you to use a high-performance cluster (HPC), Kubernetes cluster or cloud computing resources to pre-compute the bulk data needed by EnTAP.
 
 #### Protein-Protein Interaction Data
 
-EnTAP-nf can also provie additional information such as potential protein-protein interactions through alignment with the orthologs provided in the [STRING](https://string-db.org/) database.  
+EnTAP-nf can also provide additional information such as potential protein-protein interactions through alignment with the orthologs provided in the [STRING](https://string-db.org/) database.  
 
 #### Integration with Tripal
 
