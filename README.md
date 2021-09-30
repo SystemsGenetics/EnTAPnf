@@ -11,7 +11,7 @@
 
 The [Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP)](https://entap.readthedocs.io/en/latest/) is designed to improve the accuracy, speed, and flexibility of functional gene annotation for both genomes and de novo assembled transcriptomes in non-model eukaryotes.  
 
-![systemsgenetics/entap-nf](docs/images/ENTAP_white_500w.jpg)
+![systemsgenetics/entap-nf](docs/images/ENTAP_white_250w.jpg)
 
 The pipeline executes EnTAP using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
