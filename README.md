@@ -9,7 +9,7 @@
 
 ## Introduction
 
-The [Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP)]https://entap.readthedocs.io/en/latest/) is designed to improve the accuracy, speed, and flexibility of functional gene annotation for both genomes and de novo assembled transcriptomes in non-model eukaryotes.  
+The [Eukaryotic Non-Model Transcriptome Annotation Pipeline (EnTAP)](https://entap.readthedocs.io/en/latest/) is designed to improve the accuracy, speed, and flexibility of functional gene annotation for both genomes and de novo assembled transcriptomes in non-model eukaryotes.  
 
 ![systemsgenetics/entap-nf](docs/images/ENTAP_white_500w.jpg)
 
