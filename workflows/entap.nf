@@ -91,7 +91,7 @@ include { DIAMOND_BLASTX as blastx_string } from '../modules/nf-core/modules/dia
 
 def interproscan_nuc_options = modules['interproscan'].clone()
 def interproscan_pep_options = modules['interproscan'].clone()
-interproscan_nuc_options.args = interproscan_nuc_options.args + "--seqtype n "
+interproscan_nuc_options.args = interproscan_nuc_options.args + " --seqtype n "
 interproscan_nuc_options.args = interproscan_nuc_options.args.replace("/--applications '.*?'", "--applications ${params.ipr_apps}")
 interproscan_pep_options.args = interproscan_pep_options.args.replace("/--applications '.*?'", "--applications ${params.ipr_apps}")
 include { INTERPROSCAN as interproscan_nuc } from '../modules/local/modules/interproscan/main.nf' addParams( options: interproscan_nuc_options )
