@@ -267,7 +267,7 @@ workflow ENTAP {
             interproscan_combine(interproscan_pep_out.tsv.collect(), sequence_filename)
         }
         if (params.seq_type == 'nuc') {
-            interproscan_nuc(ch_split_seqs.ipr, fromPath(params.input))
+            interproscan_nuc(ch_split_seqs.ipr)
             interproscan_nuc.out.outfiles
                 .map { it[1] }
                 .flatten()
