@@ -275,7 +275,7 @@ workflow ENTAP {
                     tsv: it.getFileName().toString().endsWith(".tsv")
                     xml: it.getFileName().toString().endsWith(".xml")
                 }
-                .set { interproscan_pep_out }
+                .set { interproscan_nuc_out }
             interproscan_combine(interproscan_nuc_out.tsv.collect(), sequence_filename)
         }
 
