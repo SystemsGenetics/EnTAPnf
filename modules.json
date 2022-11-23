@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/entap",
-    "homePage": "https://github.com/nf-core/entap",
+    "name": "systemsgenetics/entapnf",
+    "homePage": "https://github.com/systemsgenetics/entapnf",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

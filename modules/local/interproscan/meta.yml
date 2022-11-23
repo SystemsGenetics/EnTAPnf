@@ -1,0 +1,39 @@
+name: interproscan
+description: InterPro provides functional analysis of proteins by classifying them into families and predicting domains and important sites.
+keywords:
+  - protein familes
+  - protein domains
+  - functional annotation
+tools:
+  - interproscan:
+    description: InterPro provides functional analysis of proteins by classifying them into families and predicting domains and important sites.
+    homepage: https://www.ebi.ac.uk/interpro/
+    documentation: https://interproscan-docs.readthedocs.io/en/latest/
+    tool_dev_url: https://github.com/ebi-pf-team/interproscan
+    doi: "doi:10.1093/nar/gkaa977"
+    licence: ['Apache-2.0']
+
+input:
+  - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test', single_end:false ]
+  - fasta:
+        type: file
+        description: Input fasta file containing query sequences
+        pattern: "*.{fa,fasta}"
+
+
+output:
+  - tsv:
+        type: file
+        description: One more more file types, as requeted by the caller, containing results.
+        pattern: "*.{tsv,svg,gff,html,json,xml}"
+  - version:
+        type: file
+        description: File containing software version
+        pattern: "versions.yml"
+
+authors:
+  - "@spficklin"

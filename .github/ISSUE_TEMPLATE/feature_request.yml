@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the GEMmaker pipeline
+description: Suggest an idea for the systemsgenetics/entapnf pipeline
 labels: enhancement
 body:
   - type: textarea

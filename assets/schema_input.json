@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/entap/master/assets/schema_input.json",
-    "title": "nf-core/entap pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/systemsgenetics/entapnf/master/assets/schema_input.json",
+    "title": "systemsgenetics/entapnf pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {
@@ -31,9 +31,6 @@
                 ]
             }
         },
-        "required": [
-            "sample",
-            "fastq_1"
-        ]
+        "required": ["sample", "fastq_1"]
     }
 }
