@@ -1,0 +1,8 @@
+repository_type: pipeline
+lint:
+    files_exist:
+        - assets/nf-core-entap_logo_light.png
+        - assets/multiqc_config.yml
+        - docs/images/nf-core-entap_logo_light.png
+        - docs/images/nf-core-entap_logo_dark.png
+        - pyproject.toml
