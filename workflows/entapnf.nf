@@ -33,11 +33,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input FASTA 
 // Don't overwrite global params.modules, create a copy instead and use that within the main script.
 def modules = params.modules.clone()
 
-//
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
-//
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -118,12 +113,7 @@ def multiqc_report = []
 workflow ENTAPNF {
 
     ch_versions = Channel.empty()
-
-    INPUT_CHECK (
-        ch_input
-    )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-
+    
     //
     // Split the FASTA file into groups of size 10.
     //

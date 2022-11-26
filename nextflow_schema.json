@@ -63,11 +63,11 @@
                 "input": {
                     "type": "string",
                     "format": "file-path",
-                    "mimetype": "text/csv",
+                    "mimetype": "text",
                     "pattern": "^\\S+\\.(fa|faa|fna|fasta)$",
                     "schema": "assets/schema_input.json",
                     "description": "Path to the input nucleotide or protein sequence file.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/entap/usage#samplesheet-input).",
+                    "help_text": "A single multi-FASTA file containing the set of coding sequence or protein sequence.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
