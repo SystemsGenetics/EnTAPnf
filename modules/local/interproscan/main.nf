@@ -25,15 +25,15 @@ process INTERPROSCAN {
     def stype = seq_type == 'pep' ? 'p' : 'n'
     """
     /usr/local/interproscan/interproscan.sh \\
-          --input $fasta \\
-          --cpu $task.cpus \\
-          --output-file-base ${prefix} \\
-          --seqtype $stype \\
-          $args
+        --input $fasta \\
+        --cpu $task.cpus \\
+        --output-file-base ${prefix} \\
+        --seqtype $stype \\
+        $args
 
     cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-          \$(/usr/local/interproscan/interproscan.sh -version 2>&1 | head -n 1 | sed 's/^InterProScan version //')
+            \$(/usr/local/interproscan/interproscan.sh -version 2>&1 | head -n 1 | sed 's/^InterProScan version //')
     END_VERSIONS
     """
 }

@@ -15,8 +15,8 @@ process FIND_ORTHO_GROUPS {
     script:
     """
     identify_orthologous_groups.py \
-      ${blast_xml} \
-      ${params.data_orthodb} \
-      ${sequence_filename}.orthodb_orthologs.txt
+        ${blast_xml} \
+        ${params.data_orthodb} \
+        ${sequence_filename}.orthodb_orthologs.txt
     """
 }
