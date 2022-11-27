@@ -16,11 +16,8 @@ import os
 import sys
 
 
-
-
-
 def create_connection(db_file):
-    """ create a database connection to a SQLite database """
+    """create a database connection to a SQLite database"""
     conn = None
     try:
         conn = sqlite3.connect(db_file)
@@ -31,11 +28,8 @@ def create_connection(db_file):
     return conn
 
 
-
-
-
 def create_table(conn, sql):
-    """ create a table from the create_table_sql statement
+    """create a table from the create_table_sql statement
     :param conn: Connection object
     :param sql: a CREATE TABLE statement
     :return:
@@ -47,11 +41,8 @@ def create_table(conn, sql):
         print(e)
 
 
-
-
-
 def index_odb10v1_OG_xrefs(conn, orthodb_dir):
-    """ Creates and inserts data into the odb10v1_OG_xrefs table.
+    """Creates and inserts data into the odb10v1_OG_xrefs table.
     :param conn: Connection object
     :param orthodb_dir: The directory where the orthodb files are kept.
     :return:
@@ -88,11 +79,8 @@ def index_odb10v1_OG_xrefs(conn, orthodb_dir):
     conn.commit()
 
 
-
-
-
 def index_odb10v1_OGs(conn, orthodb_dir):
-    """ Creates and inserts data into the odb10v1_OGs table.
+    """Creates and inserts data into the odb10v1_OGs table.
     :param conn: Connection object
     :param orthodb_dir: The directory where the orthodb files are kept.
     :return:
@@ -130,11 +118,8 @@ def index_odb10v1_OGs(conn, orthodb_dir):
     conn.commit()
 
 
-
-
-
 def index_odb10v1_OG2genes(conn, orthodb_dir):
-    """ Creates and inserts data into the odb10v1_OG2genes table.
+    """Creates and inserts data into the odb10v1_OG2genes table.
     :param conn: Connection object
     :param orthodb_dir: The directory where the orthodb files are kept.
     :return:
@@ -171,11 +156,8 @@ def index_odb10v1_OG2genes(conn, orthodb_dir):
     conn.commit()
 
 
-
-
-
 def index_odb10v1_level2species(conn, orthodb_dir):
-    """ Creates and inserts data into the odb10v1_level2species table.
+    """Creates and inserts data into the odb10v1_level2species table.
     :param conn: Connection object
     :param orthodb_dir: The directory where the orthodb files are kept.
     :return:
@@ -213,11 +195,8 @@ def index_odb10v1_level2species(conn, orthodb_dir):
     conn.commit()
 
 
-
-
-
 def index_odb10v1_species(conn, orthodb_dir):
-    """ Creates and inserts data into the odb10v1_species table.
+    """Creates and inserts data into the odb10v1_species table.
     :param conn: Connection object
     :param orthodb_dir: The directory where the orthodb files are kept.
     :return:
@@ -260,10 +239,7 @@ def index_odb10v1_species(conn, orthodb_dir):
     conn.commit()
 
 
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     The main subroutine of the program.  The script receives a single arugment:
     the directory where the orthodb files are kept.

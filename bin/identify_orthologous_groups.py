@@ -7,6 +7,7 @@ from parse_blastxml import parseBLASTXMLfile
 import sqlite3
 from sqlite3 import Error
 
+
 def create_connection(db_file):
     """
     Create a database connection to a SQLite database
@@ -43,20 +44,22 @@ if __name__ == "__main__":
     results = parseBLASTXMLfile(blast_results, True)
 
     # Reduce the list down to the best hit per query sequence.
-    grp_q = results[['Query_id', 'Hit_id', 'Evalue', 'Identity']].groupby(by='Query_id')
-    best_hits = grp_q.apply(lambda x: x[x['Evalue'] == x['Evalue'].min()].iloc[0])
+    grp_q = results[["Query_id", "Hit_id", "Evalue", "Identity"]].groupby(by="Query_id")
+    best_hits = grp_q.apply(lambda x: x[x["Evalue"] == x["Evalue"].min()].iloc[0])
 
     # Create the output dataframe
-    outdf = pd.DataFrame(columns=['Gene_ID','OrthoDB_OG_ID','OG_Name','Tax_ID','Database', 'Term_ID', 'OG_Term_Genes'])
+    outdf = pd.DataFrame(
+        columns=["Gene_ID", "OrthoDB_OG_ID", "OG_Name", "Tax_ID", "Database", "Term_ID", "OG_Term_Genes"]
+    )
 
-    for index,row in best_hits.iterrows():
+    for index, row in best_hits.iterrows():
 
         # Get the list of orthologous groups per match.
         sql = """
           SELECT OG_id FROM odb10v1_OG2genes WHERE odb_gene_id = ?;
         """
         cur = conn.cursor()
-        cur.execute(sql, (row['Hit_id'],))
+        cur.execute(sql, (row["Hit_id"],))
         OGs = cur.fetchall()
 
         # Iterate through the orthologous groups to get the inforamtion
@@ -80,15 +83,20 @@ if __name__ == "__main__":
             annots = cur.fetchall()
 
             for annot in annots:
-                outdf = outdf.append(pd.Series({
-                  'Gene_ID': row['Query_id'],
-                  'OrthoDB_OG_ID': OG[0],
-                  'OG_Name': OG_info[1],
-                  'Tax_ID': OG_info[0],
-                  'Database': annot[0],
-                  'Term_ID': annot[1],
-                  'OG_Term_Genes': annot[2],
-                }), ignore_index=True)
+                outdf = outdf.append(
+                    pd.Series(
+                        {
+                            "Gene_ID": row["Query_id"],
+                            "OrthoDB_OG_ID": OG[0],
+                            "OG_Name": OG_info[1],
+                            "Tax_ID": OG_info[0],
+                            "Database": annot[0],
+                            "Term_ID": annot[1],
+                            "OG_Term_Genes": annot[2],
+                        }
+                    ),
+                    ignore_index=True,
+                )
 
     # Finally, write the output file with the results.
     outdf.to_csv(outfile, sep="\t", index=False)
