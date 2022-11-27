@@ -24,7 +24,7 @@ process PARSE_PROTEINPROTEIN {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+        parse_proteinprotein.py: EnTAPnf ${workflow.manifest.version}
     END_VERSIONS
     """
 }

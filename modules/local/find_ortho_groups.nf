@@ -23,7 +23,7 @@ process FIND_ORTHO_GROUPS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+        identify_orthologous_groups.py: EnTAPnf ${workflow.manifest.version}
     END_VERSIONS
     """
 }

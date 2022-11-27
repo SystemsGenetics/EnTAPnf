@@ -17,7 +17,7 @@ process PARSE_BLASTXML {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+        parse_blastxml.py: EnTAPnf ${workflow.manifest.version}
     END_VERSIONS
     """
 }

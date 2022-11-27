@@ -1,10 +1,11 @@
 process FIND_EC_NUMBERS {
+    tag "$meta.id"
     label 'process_single'
 
     container "annotater/python:3.7-0.9"
 
     input:
-    path blast_xml
+    tuple val(meta), path(blast_xml)
     val sequence_filename
 
     output:
@@ -23,7 +24,7 @@ process FIND_EC_NUMBERS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+        parse_enzyme.py: EnTAPnf ${workflow.manifest.version}
     END_VERSIONS
     """
 }

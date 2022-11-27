@@ -22,7 +22,7 @@ process INTERPROSCAN_COMBINE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        parse_enzyme: EnTAPnf ${workflow.workflow.manifest.version}
+        interpro_combine.py: EnTAPnf ${workflow.manifest.version}
     END_VERSIONS
     """
 }

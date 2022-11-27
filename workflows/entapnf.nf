@@ -115,17 +115,11 @@ workflow ENTAPNF {
         db = [ file(params.data_sprot + '/uniprot_sprot.dmnd', checkIfExists: true) ]
         if (params.seq_type == 'pep') {
             blastp_sprot(ch_split_seqs.sprot, db, 'xml', '')
-            blastp_sprot.out.txt
-                .map { it[1] }
-                .set { blastp_sprot_txt }
-            find_ec_numbers(blastp_sprot_txt, sequence_filename)
+            find_ec_numbers(blastp_sprot.out.xml, sequence_filename)
         }
         if (params.seq_type == 'nuc') {
             blastx_sprot(ch_split_seqs.sprot, db, 'xml', '')
-            blastx_sprot.out.txt
-                .map { it[1] }
-                .set { blastx_sprot_txt }
-            find_ec_numbers(blastx_sprot_txt, sequence_filename)
+            find_ec_numbers(blastp_sprot.out.xml, sequence_filename)
         }
     }
 
