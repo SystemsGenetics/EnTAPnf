@@ -36,7 +36,7 @@ def write_IPR(ipr_file, ipr_terms):
     ipr_terms = ipr_terms.drop_duplicates(keep='first')
 
     # Removes the trailing ID number that InterProScan adds to the sequence
-    ipr_terms["Gene"] = ipr_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
+    #ipr_terms["Gene"] = ipr_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
     ipr_terms.to_csv(ipr_file, sep="\t", mode='a', header=False, index=False)
 
 
@@ -53,10 +53,10 @@ def write_GO(go_file, go_terms):
     go_terms = go_terms.drop_duplicates(keep='first')
 
     # Removes the trailing ID number that InterProScan adds to the sequence
-    go_terms["Gene"] = go_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
+    #go_terms["Gene"] = go_terms["Gene"].str.replace(r'^(.*?)_\d+', r'\1')
 
     # split the GO column containing the different GO terms associated with Gene
-    if (go_terms["GO"].size > 0): 
+    if (go_terms["GO"].size > 0):
     	go_terms["GO"] = go_terms["GO"].str.split("|")
 
     	# Create a new empty data frame. Loop over the go_terms dataframe and append

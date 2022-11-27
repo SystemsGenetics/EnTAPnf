@@ -18,4 +18,8 @@ wget https://stringdb-static.org/download/protein.info.v11.0.txt.gz
 gunzip protein.info.v11.0.txt.gz
 
 # Index the file for BLAST
-docker run -v ${PWD}:/Annotater/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /Annotater/data; diamond makedb --threads 4 --in protein.sequences.v11.0.fa -d protein.sequences.v11.0"
+docker run \
+  -v ${PWD}:/EnTAP/data \
+  -u $(id -u ${USER}):$(id -g ${USER}) \
+  quay.io/biocontainers/diamond:2.0.15--hb97b32f_0 \
+   /bin/bash -c "cd /EnTAP/data; diamond makedb --threads 4 --in protein.sequences.v11.0.fa -d protein.sequences.v11.0"
