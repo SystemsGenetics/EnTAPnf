@@ -26,7 +26,7 @@ indent_size = unset
 [/assets/email*]
 indent_size = unset
 
-[/assets/demo/*]
+[/assets/demo/**]
 charset = unset
 end_of_line = unset
 insert_final_newline = unset
