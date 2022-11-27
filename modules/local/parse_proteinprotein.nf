@@ -1,17 +1,18 @@
-/**
- * Parses blast output against protein protein interaction.
- */
 process PARSE_PROTEINPROTEIN {
-    publishDir "${params.output.dir}/proteinprotein/", mode: "link"
+    label 'process_single'
 
     container "annotater/python:3.7-0.9"
 
     input:
-        file blast_xml from BLAST_STRING_XML
-        val sequence_filename from SEQUENCE_FILENAME
+    path blast_xml
+    val sequence_filename
 
     output:
-        file "*.graphml" into PROTEINPROTEIN_BLASTX_TXT
+    path "*.graphml", emit: graphml
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     """
@@ -20,5 +21,10 @@ process PARSE_PROTEINPROTEIN {
         --db ${params.data.string}/protein \
         --species ${params.input.taxonomy_ID} \
         --out ${sequence_filename}.graphml
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+    END_VERSIONS
     """
 }

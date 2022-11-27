@@ -1,19 +1,23 @@
-
 process PARSE_BLASTXML {
-    publishDir "${params.outdir}/interproscan_combined",
-        mode: params.publish_dir_mode
+    label 'process_single'
 
     input:
-    file blast_xml from ORTHODB_BLASTX_XML
+    path blast_xml
 
     output:
-    file "*.txt" into ORTHODB_BLASTX_TXT
+    path "*.txt", emit: blast_txt
+    path "versions.yml", emit: versions
 
     when:
-    params.steps.orthodb.enable == true
+    task.ext.when == null || task.ext.when
 
     script:
     """
     parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+    END_VERSIONS
     """
 }

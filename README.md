@@ -2,7 +2,7 @@
 
 [![GitHub Actions CI Status](https://github.com/systemsgenetics/entapnf/workflows/nf-core%20CI/badge.svg)](https://github.com/systemsgenetics/entapnf/actions?query=workflow%3A%22nf-core+CI%22)
 [![GitHub Actions Linting Status](https://github.com/systemsgenetics/entapnf/workflows/nf-core%20linting/badge.svg)](https://github.com/systemsgenetics/entapnf/actions?query=workflow%3A%22nf-core+linting%22)
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.04.0-23aa62.svg?labelColor=000000)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A521.10.3-23aa62.svg)](https://www.nextflow.io/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
@@ -66,8 +66,6 @@ EnTAPnf can also provide additional information such as potential protein-protei
 
 1. Start running your own analysis!
 
-   <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
    ```console
    nextflow run systemsgenetics/entapnf \
      -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> \
@@ -101,8 +99,6 @@ If you would like to contribute to this pipeline, please see the [contributing g
 ## Citations
 
 EnTAPnf is currently unpublished. For now, please use the GitHub URL when referencing.
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 

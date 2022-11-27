@@ -1,16 +1,18 @@
-
 process FIND_ORTHO_GROUPS {
-    publishDir "${params.outdir}/ortho_groups_orthodb",
-        mode: params.publish_dir_mode
+    label 'process_single'
 
     container "annotater/python:3.7-0.9"
 
     input:
-    file blast_xml
+    path blast_xml
     val sequence_filename
 
     output:
-    file "*.txt"
+    path "*.txt", emit: orths
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     """
@@ -18,5 +20,10 @@ process FIND_ORTHO_GROUPS {
         ${blast_xml} \
         ${params.data_orthodb} \
         ${sequence_filename}.orthodb_orthologs.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        parse_enzyme: EnTAPnf ${workflow.manifest.version}
+    END_VERSIONS
     """
 }
