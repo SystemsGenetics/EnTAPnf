@@ -34,6 +34,8 @@ include { INTERPROSCAN as interproscan_pep } from '../modules/local/interproscan
 include { INTERPROSCAN_COMBINE as interproscan_combine } from '../modules/local/interproscan_combine.nf'
 include { FIND_EC_NUMBERS as find_ec_numbers } from '../modules/local/find_EC_numbers.nf'
 include { FIND_ORTHO_GROUPS as find_ortho_groups } from '../modules/local/find_ortho_groups.nf'
+include { ENTAP_CONFIG as entap_config } from '../modules/local/entap/entap_config/main.nf'
+include { ENTAP_RUN as entap_run } from '../modules/local/entap/entap_run/main.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,18 +110,26 @@ workflow ENTAPNF {
         }
     //ch_split_seqs.sprot.view()
 
+    // Houses the list of diamond database files for EnTAP
+    entap_dbs = []
+
     //
     // BLAST sequences against ExPASy SwissProt using Diamond.
     //
     if (params.data_sprot) {
         db = [ file(params.data_sprot + '/uniprot_sprot.dmnd', checkIfExists: true) ]
+        entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_sprot(ch_split_seqs.sprot, db, 'xml', '')
-            find_ec_numbers(blastp_sprot.out.xml, sequence_filename)
+            if (params.enzyme_dat) {
+                find_ec_numbers(blastp_sprot.out.xml, sequence_filename, params.enzyme_dat)
+            }
         }
         if (params.seq_type == 'nuc') {
             blastx_sprot(ch_split_seqs.sprot, db, 'xml', '')
-            find_ec_numbers(blastp_sprot.out.xml, sequence_filename)
+            if (params.enzyme_dat) {
+                find_ec_numbers(blastp_sprot.out.xml, sequence_filename, params.enzyme_dat)
+            }
         }
     }
 
@@ -129,6 +139,7 @@ workflow ENTAPNF {
     //
     if (params.data_trembl) {
         db = [ file(params.data_trembl + "/uniprot_trembl.dmnd", checkIfExists: true) ]
+        entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_data_trembl(ch_split_seqs.data_trembl, db, 'xml', '')
         }
@@ -142,6 +153,7 @@ workflow ENTAPNF {
     //
     if (params.data_nr) {
         db = [ file(params.data_nr + "/nr.dmnd", checkIfExists: true) ]
+        entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_nr(ch_split_seqs.nr, db, 'xml', '')
         }
@@ -155,6 +167,7 @@ workflow ENTAPNF {
     //
     if (params.data_refseq) {
         db = [ file(params.data_refseq + "/refseq_plant.protein.dmnd", checkIfExists: true) ]
+        entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_refseq(ch_split_seqs.refseq, db, 'xml', '')
         }
@@ -225,9 +238,17 @@ workflow ENTAPNF {
                 .set { interproscan_nuc_out }
             interproscan_combine(interproscan_nuc_out.tsv.collect(), sequence_filename)
         }
-
-
     }
+
+    //
+    // EnTAP
+    //
+    if (!params.skip_entap) {
+        entap_config("${baseDir}/assets/entap_config.ini")
+        entap_run([['id': 'entap'], params.input], entap_dbs, "${baseDir}/assets/entap_config.ini",
+            params.seq_type, entap_config.out.entap_outdir)
+    }
+
 }
 
 /*

@@ -42,6 +42,11 @@
                     "description": "The location of the Diamond index of the ExPASy uniprot swissprot database.",
                     "fa_icon": "fas fa-database"
                 },
+                "enzyme_dat": {
+                    "type": "string",
+                    "description": "The location of the enzyme.dat file that comes from Expasy (Swiss Bioinformatics Resource Protal).",
+                    "fa_icon": "fas fa-database"
+                },
                 "data_refseq": {
                     "type": "string",
                     "description": "The location of the Diamond index of the NCBI refseq database.",
@@ -84,6 +89,12 @@
                     "description": "The NCBI Taxonomy ID for the species.",
                     "fa_icon": "fab fa-gitter"
                 },
+                "skip_entap": {
+                    "type": "boolean",
+                    "description": "You can skip EnTAP by setting this to true (default: false)",
+                    "default": false,
+                    "fa_icon": "fab fa-gitter"
+                },
                 "batch_size": {
                     "type": "number",
                     "description": "The number of sequences to include per batch.",
@@ -95,12 +106,6 @@
                     "default": "pep",
                     "description": "Specifies if the input FASTA file is \"nuc\" for nucleotide or \"pep\" for protein.",
                     "fa_icon": "fas fa-adjust"
-                },
-                "ipr_apps": {
-                    "type": "string",
-                    "description": "A comma-separated list of applications  for use by InterProScan. This argument is only used when the \"data_interproscan\" argument is provided with data.",
-                    "default": "TIGRFAM,SFLD,SUPERFAMILY,Gene3D,Hamap,Coils,ProSiteProfiles,SMART,CDD,PRINTS,Pfam,MobiDBLite,PIRSF,ProDom,PANTHER",
-                    "fa_icon": "fas fa-cog"
                 }
             }
         },
