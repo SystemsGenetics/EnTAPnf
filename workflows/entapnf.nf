@@ -30,8 +30,11 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input FASTA 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Don't overwrite global params.modules, create a copy instead and use that within the main script.
-def modules = params.modules.clone()
+include { INTERPROSCAN as interproscan_nuc } from '../modules/local/interproscan/main.nf'
+include { INTERPROSCAN as interproscan_pep } from '../modules/local/interproscan/main.nf'
+include { INTERPROSCAN_COMBINE as interproscan_combine } from '../modules/local/interproscan_combine.nf'
+include { FIND_EC_NUMBERS as find_ec_numbers } from '../modules/local/find_EC_numbers.nf'
+include { FIND_ORTHO_GROUPS as find_ortho_groups } from '../modules/local/find_ortho_groups.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,59 +50,24 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 //
 // MODULE: Installed directly from nf-core/modules
 //
-def blastp_sprot_options = modules['diamond_blastp'].clone()
-def blastx_sprot_options = modules['diamond_blastp'].clone()
-blastp_sprot_options.publish_dir = 'blastp_vs_sprot'
-blastx_sprot_options.publish_dir = 'blastx_vs_sprot'
-include { DIAMOND_BLASTP as blastp_sprot } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_sprot_options )
-include { DIAMOND_BLASTX as blastx_sprot } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_sprot_options )
+include { DIAMOND_BLASTP as blastp_sprot } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_sprot } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def blastp_trembl_options = modules['diamond_blastp'].clone()
-def blastx_trembl_options = modules['diamond_blastp'].clone()
-blastp_trembl_options.publish_dir = 'blastp_vs_trembl'
-blastx_trembl_options.publish_dir = 'blastx_vs_trembl'
-include { DIAMOND_BLASTP as blastp_trembl } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_trembl_options )
-include { DIAMOND_BLASTX as blastx_trembl } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_trembl_options )
+include { DIAMOND_BLASTP as blastp_trembl } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_trembl } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def blastp_refseq_options = modules['diamond_blastp'].clone()
-def blastx_refseq_options = modules['diamond_blastp'].clone()
-blastp_refseq_options.publish_dir = 'blastp_vs_refseq'
-blastx_refseq_options.publish_dir = 'blastx_vs_refseq'
-include { DIAMOND_BLASTP as blastp_refseq } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_refseq_options )
-include { DIAMOND_BLASTX as blastx_refseq } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_refseq_options )
+include { DIAMOND_BLASTP as blastp_refseq } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_refseq } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def blastp_nr_options = modules['diamond_blastp'].clone()
-def blastx_nr_options = modules['diamond_blastp'].clone()
-blastp_nr_options.publish_dir = 'blastp_vs_nr'
-blastx_nr_options.publish_dir = 'blastx_vs_nr'
-include { DIAMOND_BLASTP as blastp_nr } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_nr_options )
-include { DIAMOND_BLASTX as blastx_nr } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_nr_options )
+include { DIAMOND_BLASTP as blastp_nr } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_nr } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def blastp_orthodb_options = modules['diamond_blastp'].clone()
-def blastx_orthodb_options = modules['diamond_blastp'].clone()
-blastp_orthodb_options.publish_dir = 'blastp_vs_orthodb'
-blastx_orthodb_options.publish_dir = 'blastx_vs_orthodb'
-include { DIAMOND_BLASTP as blastp_orthodb } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_orthodb_options )
-include { DIAMOND_BLASTX as blastx_orthodb } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_orthodb_options )
+include { DIAMOND_BLASTP as blastp_orthodb } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_orthodb } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def blastp_string_options = modules['diamond_blastp'].clone()
-def blastx_string_options = modules['diamond_blastp'].clone()
-blastp_string_options.publish_dir = 'blastp_vs_string'
-blastx_string_options.publish_dir = 'blastx_vs_string'
-include { DIAMOND_BLASTP as blastp_string } from '../modules/nf-core/diamond/blastp/main.nf' addParams( options: blastp_string_options )
-include { DIAMOND_BLASTX as blastx_string } from '../modules/nf-core/diamond/blastx/main.nf' addParams( options: blastx_string_options )
+include { DIAMOND_BLASTP as blastp_string } from '../modules/nf-core/diamond/blastp/main.nf'
+include { DIAMOND_BLASTX as blastx_string } from '../modules/nf-core/diamond/blastx/main.nf'
 
-def interproscan_nuc_options = modules['interproscan'].clone()
-def interproscan_pep_options = modules['interproscan'].clone()
-interproscan_nuc_options.args = interproscan_nuc_options.args + " --seqtype n "
-interproscan_nuc_options.args = interproscan_nuc_options.args.replace("/--applications '.*?'", "--applications ${params.ipr_apps}")
-interproscan_pep_options.args = interproscan_pep_options.args.replace("/--applications '.*?'", "--applications ${params.ipr_apps}")
-include { INTERPROSCAN as interproscan_nuc } from '../modules/local/interproscan/main.nf' addParams( options: interproscan_nuc_options )
-include { INTERPROSCAN as interproscan_pep } from '../modules/local/interproscan/main.nf' addParams( options: interproscan_pep_options )
-
-include { INTERPROSCAN_COMBINE as interproscan_combine } from '../modules/local/interproscan_combine.nf'
-include { FIND_EC_NUMBERS as find_ec_numbers } from '../modules/local/find_EC_numbers.nf'
-include { FIND_ORTHO_GROUPS as find_ortho_groups } from '../modules/local/find_ortho_groups.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,7 +81,7 @@ def multiqc_report = []
 workflow ENTAPNF {
 
     ch_versions = Channel.empty()
-    
+
     //
     // Split the FASTA file into groups of size 10.
     //
@@ -241,7 +209,7 @@ workflow ENTAPNF {
     if (params.data_ipr) {
 
         if (params.seq_type == 'pep') {
-            interproscan_pep(ch_split_seqs.ipr)
+            interproscan_pep(ch_split_seqs.ipr, params.seq_type)
             interproscan_pep.out.outfiles
                 .map { it[1] }
                 .flatten()
@@ -253,7 +221,7 @@ workflow ENTAPNF {
             interproscan_combine(interproscan_pep_out.tsv.collect(), sequence_filename)
         }
         if (params.seq_type == 'nuc') {
-            interproscan_nuc(ch_split_seqs.ipr)
+            interproscan_nuc(ch_split_seqs.ipr, params.seq_type)
             interproscan_nuc.out.outfiles
                 .map { it[1] }
                 .flatten()
