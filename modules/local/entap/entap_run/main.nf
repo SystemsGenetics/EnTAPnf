@@ -15,7 +15,7 @@ process ENTAP_RUN {
     path (interproscan_results)
 
     output:
-    path('*.tsv'), optional: true, emit: tsv
+    path ('outfiles/final_results/**'), emit: tsv
     path "versions.yml", emit: versions
 
     when:
