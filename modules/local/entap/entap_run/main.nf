@@ -52,7 +52,6 @@ process ENTAP_RUN {
         -d \$PWD/$db_list \\
         --out-dir \$PWD/outfiles
 
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         EnTAP: \$(EnTAP --version 2>&1 | tail -n 1 | sed 's/^EnTAP  version: //')
