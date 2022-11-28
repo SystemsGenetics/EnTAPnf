@@ -211,21 +211,27 @@ def saveSession():
         ofile.write(json.dumps(sessionState, indent=4) + "\n")
 
 
-### __SCRIPT__ ###
-initializeDownloadTasks()
-parser = argparse.ArgumentParser()
-parser.add_argument("--list", dest="isList", action="store_true")
-parser.add_argument("--tasks", dest="whitelist", nargs="?", default=",".join(DOWNLOAD_TASKS.keys()))
-parser.add_argument("--reset", dest="rstList", nargs="?", default="")
-args = parser.parse_args()
-whitelist = set((s.strip() for s in args.whitelist.split(",") if s))
-if args.isList:
-    listTasks()
-else:
-    loadSession(args.rstList)
-    try:
-        for name in sessionState:
-            if name in whitelist:
-                processTask(name)
-    finally:
-        saveSession()
+def main():
+    """
+    The main function
+    """
+    initializeDownloadTasks()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--list", dest="isList", action="store_true")
+    parser.add_argument("--tasks", dest="whitelist", nargs="?", default=",".join(DOWNLOAD_TASKS.keys()))
+    parser.add_argument("--reset", dest="rstList", nargs="?", default="")
+    args = parser.parse_args()
+    whitelist = set((s.strip() for s in args.whitelist.split(",") if s))
+    if args.isList:
+        listTasks()
+    else:
+        loadSession(args.rstList)
+        try:
+            for name in sessionState:
+                if name in whitelist:
+                    processTask(name)
+        finally:
+            saveSession()
+
+if __name__ == "__main__":
+    main()

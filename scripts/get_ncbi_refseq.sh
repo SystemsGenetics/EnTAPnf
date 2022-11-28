@@ -21,5 +21,5 @@ rm -rf ./ftp.ncbi.nlm.nih.gov/
 docker run \
   -v ${PWD}:/EnTAP/data \
   -u $(id -u ${USER}):$(id -g ${USER}) \
-  quay.io/biocontainers/diamond:2.0.15--hb97b32f_0 \
+  systemsgenetics/entap:flask \
   /bin/bash -c "cd /EnTAP/data; diamond makedb --threads 4 --in refseq_plant.protein.faa -d refseq_plant.protein"

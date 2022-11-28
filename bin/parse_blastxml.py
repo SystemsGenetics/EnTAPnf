@@ -73,7 +73,8 @@ class HitTarget(object):
                 "Hsp_hit-to",
                 "Hsp_query-frame",
                 "Hsp_hit-frame",
-            ]
+            ],
+            dtype=object,
         )
 
     def start(self, tag, attrib):

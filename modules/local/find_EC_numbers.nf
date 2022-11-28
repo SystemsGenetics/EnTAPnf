@@ -17,11 +17,12 @@ process FIND_EC_NUMBERS {
     task.ext.when == null || task.ext.when
 
     script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     parse_enzyme.py \
         --xml $blast_xml \
         --enzyme $enzyme_dat \
-        --out ${sequence_filename}.ECnumbers.txt
+        --out ${prefix}.ECnumbers.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

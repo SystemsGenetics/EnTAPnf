@@ -14,7 +14,9 @@ process ENTAP_CONFIG {
     path (entap_config)
 
     output:
-    tuple path('outfiles'), emit: entap_outdir
+    path('outfiles/databases/entap_database.db'), emit: entap_db
+    path('outfiles/databases/eggnog.db'), emit: eggnog_db
+    path('outfiles/bin/eggnog_proteins.dmnd'), emit: data_eggnog
     path "versions.yml", emit: versions
 
     when:
@@ -30,7 +32,7 @@ process ENTAP_CONFIG {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        diamond: \$(EnTAP --version 2>&1 | tail -n 1 | sed 's/^EnTAP  version: //')
+        EnTAP: \$(EnTAP --version 2>&1 | tail -n 1 | sed 's/^EnTAP  version: //')
     END_VERSIONS
     """
 }

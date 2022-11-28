@@ -246,7 +246,8 @@ workflow ENTAPNF {
     if (!params.skip_entap) {
         entap_config("${baseDir}/assets/entap_config.ini")
         entap_run([['id': 'entap'], params.input], entap_dbs, "${baseDir}/assets/entap_config.ini",
-            params.seq_type, entap_config.out.entap_outdir)
+            params.seq_type, entap_config.out.entap_db, entap_config.out.eggnog_db,
+            entap_config.out.data_eggnog)
     }
 
 }

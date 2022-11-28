@@ -16,11 +16,13 @@ process ENTAP_RUN {
     path (dbs)
     path (entap_config)
     val (seq_type)
-    path (entap_outdir)
+    path (entap_db)
+    path (eggnog_db)
+    path (data_eggnog)
 
     output:
     tuple val(meta), path('*.tsv'), optional: true, emit: tsv
-    path "versions.yml"           , emit: versions
+    path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,19 +31,27 @@ process ENTAP_RUN {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def run_type = seq_type == 'pep' ? '--runP' : '--runN'
-    def db_list = dbs.join(" -d ")
+    def db_list = dbs.join(" -d \$PWD/")
     """
+    # Update the config file so it can find the eggnong diamond file
+    cp $entap_config new.$entap_config
+    CWD=`echo \$PWD | perl -p -e 's/\\\\//\\\\\\\\\\\\//g'`
+    echo "s/eggnog-dmnd=eggnog_proteins.dmnd/eggnog-dmnd=\$CWD\\\\/$data_eggnog/"
+    perl -pi -e "s/eggnog-dmnd=eggnog_proteins.dmnd/eggnog-dmnd=\$CWD\\\\/$data_eggnog/" new.$entap_config
+    perl -pi -e "s/eggnog-sql=eggnog.db/eggnog-sql=\$CWD\\\\/$eggnog_db/" new.$entap_config
+
+    # Run EnTAP
     EnTAP $run_type \\
-        -t $task.cpus  \\
-        --ini $entap_config \\
+        -t $task.cpus \\
+        --ini new.$entap_config \\
         --input $fasta \\
-        -d $db_list \\
-        --out-dir $entap_outdir
+        -d \$PWD/$db_list \\
+        --out-dir \$PWD/outfiles
 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        diamond: \$(EnTAP --version 2>&1 | tail -n 1 | sed 's/^EnTAP  version: //')
+        EnTAP: \$(EnTAP --version 2>&1 | tail -n 1 | sed 's/^EnTAP  version: //')
     END_VERSIONS
     """
 }
