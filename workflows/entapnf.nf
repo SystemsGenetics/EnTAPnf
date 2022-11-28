@@ -99,7 +99,8 @@ workflow ENTAPNF {
     //
     // Split the FASTA file into groups of size 10.
     //
-    sequence_filename =  params.input.replaceFirst(/^.*\/(.*)\..+$/, '$1')
+    sequence_filename = params.input.replaceFirst(/^.*\/(.*)\..+$/, '$1')
+    entap_sequence_filename = params.input.replaceFirst(/^.*\/([^\.]+).*$/, '$1') + "_final"
     ch_split_seqs = Channel
         .fromPath(params.input)
         .splitFasta(by: params.batch_size, file: true)
@@ -142,14 +143,19 @@ workflow ENTAPNF {
                 .map { it[1] }
                 .collect()
                 .set { blastp_sprot_txt }
-            combine_blastp_sprot(blastp_sprot_txt, 'blastp', sequence_filename, 'uniprot_sprot')
+            combine_blastp_sprot(blastp_sprot_txt, 'blastp', entap_sequence_filename, 'uniprot_sprot')
         }
         if (params.seq_type == 'nuc') {
             blastx_sprot(ch_split_seqs.sprot, db, 'xml', '')
             if (params.enzyme_dat) {
-                find_ec_numbers(blastp_sprot.out.xml, params.enzyme_dat)
+                find_ec_numbers(blastx_sprot.out.xml, params.enzyme_dat)
             }
-            parse_blastx_sprot(blastp_sprot.out.xml)
+            parse_blastx_sprot(blastx_sprot.out.xml)
+            parse_blastx_sprot.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastx_sprot_txt }
+            combine_blastx_sprot(blastx_sprot_txt, 'blastx', entap_sequence_filename, 'uniprot_sprot')
         }
     }
 
@@ -162,9 +168,21 @@ workflow ENTAPNF {
         entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_data_trembl(ch_split_seqs.data_trembl, db, 'xml', '')
+            parse_blastp_trembl(blastp_trembl.out.xml)
+            parse_blastp_trembl.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastp_trembl_txt }
+            combine_blastp_trembl(blastp_ntrembl_txt, 'blastp', entap_sequence_filename, 'uniprot_trembl')
         }
         if (params.seq_type == 'nuc') {
             blastx_data_trembl(ch_split_seqs.data_trembl, db, 'xml', '')
+            parse_blastx_trembl(blastx_trembl.out.xml)
+            parse_blastx_trembl.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastx_trembl_txt }
+            combine_blastx_trembl(blastx_ntrembl_txt, 'blastx', entap_sequence_filename, 'uniprot_trembl')
         }
     }
 
@@ -176,9 +194,21 @@ workflow ENTAPNF {
         entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_nr(ch_split_seqs.nr, db, 'xml', '')
+            parse_blastp_nr(blastp_nr.out.xml)
+            parse_blastp_nr.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastp_nr_txt }
+            combine_blastp_nr(blastp_nr_txt, 'blastp', entap_sequence_filename, 'nr')
         }
         if (params.seq_type == 'nuc') {
             blastx_nr(ch_split_seqs.nr, db, 'xml', '')
+            parse_blastx_nr(blastx_nr.out.xml)
+            parse_blastx_nr.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastx_nr_txt }
+            combine_blastx_nr(blastx_nr_txt, 'blastx', entap_sequence_filename, 'nr')
         }
     }
 
@@ -190,9 +220,21 @@ workflow ENTAPNF {
         entap_dbs.add(db[0])
         if (params.seq_type == 'pep') {
             blastp_refseq(ch_split_seqs.refseq, db, 'xml', '')
+            parse_blastp_refseq(blastp_refseq.out.xml)
+            parse_blastp_refseq.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastp_refseq_txt }
+            combine_blastp_refseq(blastp_refseq_txt, 'blastp', entap_sequence_filename, 'refseq_plant')
         }
         if (params.seq_type == 'nuc') {
             blastx_refseq(ch_split_seqs.refseq, db, 'xml', '')
+            parse_blastx_refseq(blastx_refseq.out.xml)
+            parse_blastx_refseq.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastx_refseq_txt }
+            combine_blastx_refseq(blastx_refseq_txt, 'blastx', entap_sequence_filename, 'refseq_plant')
         }
     }
 
@@ -265,9 +307,41 @@ workflow ENTAPNF {
     //
     if (!params.skip_entap) {
         entap_config("${baseDir}/assets/entap_config.ini")
+
+        // Create a channel containing all of the combined blast output files
+        ch_blast_results = Channel.empty()
+        if (params.seq_type == 'pep') {
+            if (params.data_sprot) {
+                ch_blast_results = ch_blast_results.concat(combine_blastp_sprot.out.outfile);
+            }
+            if (params.data_refseq) {
+                ch_blast_results = ch_blast_results.concat(combine_blastp_refseq.out.outfile);
+            }
+            if (params.data_nr) {
+                ch_blast_results = ch_blast_results.concat(combine_blastp_nr.out.outfile);
+            }
+            if (params.data_trembl) {
+                ch_blast_results = ch_blast_results.concat(combine_blastp_trembl.out.outfile);
+            }
+        }
+        if (params.seq_type == 'nuc') {
+            if (params.data_sprot) {
+                ch_blast_results = ch_blast_results.concat(combine_blastx_sprot.out.outfile);
+            }
+            if (params.data_refseq) {
+                ch_blast_results = ch_blast_results.concat(combine_blastx_refseq.out.outfile);
+            }
+            if (params.data_nr) {
+                ch_blast_results = ch_blast_results.concat(combine_blastx_nr.out.outfile);
+            }
+            if (params.data_trembl) {
+                ch_blast_results = ch_blast_results.concat(combine_blastx_trembl.out.outfile);
+            }
+        }
+
         entap_run([['id': 'entap'], params.input], entap_dbs, "${baseDir}/assets/entap_config.ini",
             params.seq_type, entap_config.out.entap_db, entap_config.out.eggnog_db,
-            entap_config.out.data_eggnog)
+            entap_config.out.data_eggnog, ch_blast_results.collect(), interproscan_combine.out.tsv)
     }
 
 }

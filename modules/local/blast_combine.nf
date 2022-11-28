@@ -10,7 +10,7 @@ process BLAST_COMBINE {
     val db_name
 
     output:
-    path ("${blast_type}_${sequence_filename}_${db_name}.out"), emit: out
+    path ("${blast_type}_${sequence_filename}_${db_name}.out"), emit: outfile
     path ("versions.yml"), emit: versions
 
     when:

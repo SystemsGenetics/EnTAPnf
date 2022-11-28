@@ -19,6 +19,8 @@ process ENTAP_RUN {
     path (entap_db)
     path (eggnog_db)
     path (data_eggnog)
+    path (blast_results)
+    path (interproscan_results)
 
     output:
     tuple val(meta), path('*.tsv'), optional: true, emit: tsv
@@ -39,6 +41,17 @@ process ENTAP_RUN {
     echo "s/eggnog-dmnd=eggnog_proteins.dmnd/eggnog-dmnd=\$CWD\\\\/$data_eggnog/"
     perl -pi -e "s/eggnog-dmnd=eggnog_proteins.dmnd/eggnog-dmnd=\$CWD\\\\/$data_eggnog/" new.$entap_config
     perl -pi -e "s/eggnog-sql=eggnog.db/eggnog-sql=\$CWD\\\\/$eggnog_db/" new.$entap_config
+
+    # Link the blast files to the directory EnTAP expects so it doesn't
+    # rerun those.
+    mkdir -p \$PWD/outfiles/similarity_search/DIAMOND
+    files=`ls blast*.out`
+    for f in \$files; do
+       ln -s \$PWD/\$f \$PWD/outfiles/similarity_search/DIAMOND/\$f
+    done;
+
+    # Link the InterProScan file to the diretory EnTAP expects
+    ln -s \$PWD/$interproscan_results \$PWD/ontology/InterProScan/interpro_results.tsv
 
     # Run EnTAP
     EnTAP $run_type \\
