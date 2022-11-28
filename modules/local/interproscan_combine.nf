@@ -1,22 +1,28 @@
-
-
 process INTERPROSCAN_COMBINE {
-    publishDir "${params.outdir}/interproscan_combined",
-        mode: params.publish_dir_mode
+    label 'process_single'
 
     container "annotater/python:3.7-0.9"
 
     input:
-    file tsv_files
+    path tsv_files
     val sequence_filename
 
     output:
-    file "${sequence_filename}.IPR_mappings.txt"
-    file "${sequence_filename}.GO_mappings.txt"
-    file "${sequence_filename}.tsv"
+    path "${sequence_filename}.IPR_mappings.txt", emit: ipr_mappings
+    path "${sequence_filename}.GO_mappings.txt", emit: go_mappings
+    path "${sequence_filename}.tsv", emit: tsv
+    path "versions.yml", emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     """
     interpro_combine.py ${sequence_filename}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        interpro_combine.py: EnTAPnf ${workflow.manifest.version}
+    END_VERSIONS
     """
 }

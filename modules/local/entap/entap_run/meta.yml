@@ -1,0 +1,38 @@
+name: entap_run
+description: The run step for EnTAP (Eukaryotic Non-Model Transcriptome Annotation Pipeline).
+keywords:
+  - protein familes
+  - protein domains
+  - functional annotation
+tools:
+  - entap:
+    description: EnTAP (Eukaryotic Non-Model Transcriptome Annotation Pipeline).
+    homepage: https://github.com/harta55/EnTAP
+    documentation: https://entap.readthedocs.io/en/latest/
+    tool_dev_url: https://github.com/harta55/EnTAP
+    doi: "doi.org/10.1111/1755-0998.13106"
+    licence: ["GPL-3.0 license"]
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - fasta:
+      type: file
+      description: Input fasta file containing query sequences
+      pattern: "*.{fa,fasta}"
+
+output:
+  - tsv:
+      type: file
+      description: One more more file types, as requeted by the caller, containing results.
+      pattern: "*.{tsv,svg,gff,html,json,xml}"
+  - version:
+      type: file
+      description: File containing software version
+      pattern: "versions.yml"
+
+authors:
+  - "@spficklin"

@@ -1,19 +1,27 @@
-
 process PARSE_BLASTXML {
-    publishDir "${params.outdir}/interproscan_combined",
-        mode: params.publish_dir_mode
+    tag "$meta.id"
+    label 'process_single'
 
-   input:
-     file blast_xml from ORTHODB_BLASTX_XML
+    container "systemsgenetics/entap:flask"
 
-   output:
-     file "*.txt" into ORTHODB_BLASTX_TXT
+    input:
+    tuple val(meta), path(blast_xml)
 
-   when:
-     params.steps.orthodb.enable == true
+    output:
+    tuple val(meta), path ("*.txt"), emit: blast_txt
+    path ("versions.yml"), emit: versions
 
-   script:
-     """
-     parse_blastxml.py --xml_file ${blast_xml} --out_file ${blast_xml}.txt
-     """
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    """
+    outfile=`basename ${blast_xml} .xml`
+    parse_blastxml.py --xml_file ${blast_xml} --out_file \${outfile}.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        parse_blastxml.py: EnTAPnf ${workflow.manifest.version}
+    END_VERSIONS
+    """
 }

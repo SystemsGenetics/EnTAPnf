@@ -30,6 +30,15 @@ wget https://v101.orthodb.org/download/odb10v1_gene_xrefs.tab.gz
 gunzip odb10v1_gene_xrefs.tab.gz
 
 # Index the file for BLAST
-docker run -v ${PWD}:/EnTAP/data -u $(id -u ${USER}):$(id -g ${USER}) annotater/diamond:0.9.25-${version} /bin/bash -c "cd /EnTAP/data; diamond makedb --threads 4 --in odb10v1_all_og_fasta.tab -d odb10v1_all_og"
+docker run \
+  -v ${PWD}:/EnTAP/data \
+  -u $(id -u ${USER}):$(id -g ${USER}) \
+  quay.io/biocontainers/diamond:2.0.15--hb97b32f_0 \
+  /bin/bash -c "cd /EnTAP/data; diamond makedb --threads 4 --in odb10v1_all_og_fasta.tab -d odb10v1_all_og"
 
-docker run -v ${PWD}:/EnTAP/data -v ${PWD}/../../bin:/EnTAP/bin -u $(id -u ${USER}):$(id -g ${USER}) annotater/python:3.7-${version} /bin/bash -c "cd /EnTAP/data; /EnTAP/bin/index_orthodb.py ."
+docker run \
+  -v ${PWD}:/EnTAP/data \
+  -v ${PWD}/../../bin:/EnTAP/bin \
+  -u $(id -u ${USER}):$(id -g ${USER}) \
+  annotater/python:3.7-${version} \
+  /bin/bash -c "cd /EnTAP/data; /EnTAP/bin/index_orthodb.py ."

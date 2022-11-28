@@ -1,8 +1,17 @@
 repository_type: pipeline
 lint:
-    files_exist:
-        - assets/nf-core-entap_logo_light.png
-        - assets/multiqc_config.yml
-        - docs/images/nf-core-entap_logo_light.png
-        - docs/images/nf-core-entap_logo_dark.png
-        - pyproject.toml
+  files_exist:
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-entapnf_logo_light.png
+    - docs/images/nf-core-entapnf_logo_light.png
+    - docs/images/nf-core-entapnf_logo_dark.png
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+  nextflow_config:
+    - manifest.name
+    - manifest.homePage
+  multiqc_config:
+    - report_comment
+  files_unchanged:
+    - .github/ISSUE_TEMPLATE/bug_report.yml

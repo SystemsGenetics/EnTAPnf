@@ -9,12 +9,12 @@ Content-Type: text/html; charset=utf-8
 $email_html
 
 --nfcoremimeboundary
-Content-Type: image/png;name="nf-core-entap_logo.png"
+Content-Type: image/png;name="systemsgenetics-entapnf_logo.png"
 Content-Transfer-Encoding: base64
 Content-ID: <nfcorepipelinelogo>
-Content-Disposition: inline; filename="nf-core-entap_logo.png"
+Content-Disposition: inline; filename="systemsgenetics-entapnf_logo_light.png"
 
-<% out << new File("$projectDir/assets/nf-core-entap_logo.png").
+<% out << new File("$projectDir/assets/systemsgenetics-entapnf_logo_light.png").
     bytes.
     encodeBase64().
     toString().

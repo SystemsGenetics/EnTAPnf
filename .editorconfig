@@ -8,7 +8,7 @@ trim_trailing_whitespace = true
 indent_size = 4
 indent_style = space
 
-[*.{yml,yaml}]
+[*.{md,yml,yaml,html,css,scss,js,cff}]
 indent_size = 2
 
 [*.json]
@@ -24,4 +24,31 @@ indent_style = unset
 indent_size = unset
 
 [/assets/email*]
+indent_size = unset
+
+[/assets/demo/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[/scripts/**]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[/docs/**.rst]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset
+
+[README.md]
 indent_size = unset
