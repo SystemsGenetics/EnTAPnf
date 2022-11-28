@@ -37,6 +37,24 @@ include { FIND_ORTHO_GROUPS as find_ortho_groups } from '../modules/local/find_o
 include { ENTAP_CONFIG as entap_config } from '../modules/local/entap/entap_config/main.nf'
 include { ENTAP_RUN as entap_run } from '../modules/local/entap/entap_run/main.nf'
 
+include { PARSE_BLASTXML as parse_blastp_sprot} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastx_sprot} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastp_trembl} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastx_trembl} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastp_refseq} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastx_refseq} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastp_nr} from '../modules/local/parse_blastxml.nf'
+include { PARSE_BLASTXML as parse_blastx_nr} from '../modules/local/parse_blastxml.nf'
+
+include { BLAST_COMBINE as combine_blastp_sprot} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastx_sprot} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastp_trembl} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastx_trembl} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastp_refseq} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastx_refseq} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastp_nr} from '../modules/local/blast_combine.nf'
+include { BLAST_COMBINE as combine_blastx_nr} from '../modules/local/blast_combine.nf'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
@@ -53,19 +71,14 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 //
 include { DIAMOND_BLASTP as blastp_sprot } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_sprot } from '../modules/nf-core/diamond/blastx/main.nf'
-
 include { DIAMOND_BLASTP as blastp_trembl } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_trembl } from '../modules/nf-core/diamond/blastx/main.nf'
-
 include { DIAMOND_BLASTP as blastp_refseq } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_refseq } from '../modules/nf-core/diamond/blastx/main.nf'
-
 include { DIAMOND_BLASTP as blastp_nr } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_nr } from '../modules/nf-core/diamond/blastx/main.nf'
-
 include { DIAMOND_BLASTP as blastp_orthodb } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_orthodb } from '../modules/nf-core/diamond/blastx/main.nf'
-
 include { DIAMOND_BLASTP as blastp_string } from '../modules/nf-core/diamond/blastp/main.nf'
 include { DIAMOND_BLASTX as blastx_string } from '../modules/nf-core/diamond/blastx/main.nf'
 
@@ -86,7 +99,7 @@ workflow ENTAPNF {
     //
     // Split the FASTA file into groups of size 10.
     //
-    sequence_filename =  params.input.replaceFirst(/^.*\/(.*)$/, '$1')
+    sequence_filename =  params.input.replaceFirst(/^.*\/(.*)\..+$/, '$1')
     ch_split_seqs = Channel
         .fromPath(params.input)
         .splitFasta(by: params.batch_size, file: true)
@@ -122,14 +135,21 @@ workflow ENTAPNF {
         if (params.seq_type == 'pep') {
             blastp_sprot(ch_split_seqs.sprot, db, 'xml', '')
             if (params.enzyme_dat) {
-                find_ec_numbers(blastp_sprot.out.xml, sequence_filename, params.enzyme_dat)
+                find_ec_numbers(blastp_sprot.out.xml, params.enzyme_dat)
             }
+            parse_blastp_sprot(blastp_sprot.out.xml)
+            parse_blastp_sprot.out.blast_txt
+                .map { it[1] }
+                .collect()
+                .set { blastp_sprot_txt }
+            combine_blastp_sprot(blastp_sprot_txt, 'blastp', sequence_filename, 'uniprot_sprot')
         }
         if (params.seq_type == 'nuc') {
             blastx_sprot(ch_split_seqs.sprot, db, 'xml', '')
             if (params.enzyme_dat) {
-                find_ec_numbers(blastp_sprot.out.xml, sequence_filename, params.enzyme_dat)
+                find_ec_numbers(blastp_sprot.out.xml, params.enzyme_dat)
             }
+            parse_blastx_sprot(blastp_sprot.out.xml)
         }
     }
 

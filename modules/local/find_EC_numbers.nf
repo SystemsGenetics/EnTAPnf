@@ -2,15 +2,14 @@ process FIND_EC_NUMBERS {
     tag "$meta.id"
     label 'process_single'
 
-    container "annotater/python:3.7-0.9"
+    container "systemsgenetics/entap:flask"
 
     input:
     tuple val(meta), path(blast_xml)
-    val (sequence_filename)
     path (enzyme_dat)
 
     output:
-    path ("*.txt"), emit: ecout
+    tuple val(meta), path ("*.txt"), emit: ecout
     path ("versions.yml"), emit: versions
 
     when:

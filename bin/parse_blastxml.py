@@ -66,6 +66,8 @@ class HitTarget(object):
                 "Hsp_identity",
                 "Hsp_positive",
                 "Hsp_gaps",
+                "Hsp_qcov",
+                "Hsp_mismatches",
                 "Hsp_align-len",
                 "Hsp_query-from",
                 "Hsp_query-to",
@@ -104,10 +106,12 @@ class HitTarget(object):
             self.in_hit = False
         if tag == "Hsp":
             self.in_hsp = False
+
             # Add in the query details to the HSP
             self.current_hsp.loc["Query_id"] = self.current_query
             self.current_hsp.loc["Query_def"] = self.current_query_def
             self.current_hsp.loc["Query_len"] = self.current_query_len
+
             # Add in the hit details to the HSP
             if self.parse_ncbi:
                 self.current_hsp.loc["Hit_id"] = self.current_hit
@@ -116,11 +120,23 @@ class HitTarget(object):
                 self.current_hsp.loc["Hit_accession"] = self.current_hit_acc
             else:
                 # TODO: adjust these for non NCBI recognized databases.
-
                 self.current_hsp.loc["Hit_id"] = self.current_hit
                 self.current_hsp.loc["Hit_def"] = self.current_hit_def
                 self.current_hsp.loc["Hit_len"] = self.current_hit_len
                 self.current_hsp.loc["Hit_accession"] = self.current_hit_acc
+
+            # Calculate the mismatches.
+            self.current_hsp.loc['Hsp_mismatches'] = \
+                self.current_hsp.loc['Hsp_midline'].count(" ") + \
+                self.current_hsp.loc['Hsp_midline'].count("+") - \
+                self.current_hsp.loc['Hsp_qseq'].count("-") - \
+                self.current_hsp.loc['Hsp_hseq'].count("-")
+
+            # Calculate query coverage.
+            self.current_hsp.loc['Hsp_qcov'] = \
+                int(self.current_hsp.loc['Hsp_align-len']) / \
+                int(self.current_hsp.loc['Query_len'])
+
             # Add this HSP to the list.
             self.hit_list.append(self.current_hsp)
             self.current_hsp = self.initHSP()
@@ -163,7 +179,7 @@ class HitTarget(object):
             self.current_hit_len = data
 
         # Ignore some fields but save all others if we're in an hsp
-        ignore = ["Hsp_num", "Hsp_qseq", "Hsp_hseq", "Hsp_midline"]
+        ignore = []
         if self.current_tag in ignore:
             pass
         elif self.in_hsp:
@@ -185,6 +201,7 @@ class HitTarget(object):
                 "Hsp_identity": "Identity",
                 "Hsp_positive": "Positive",
                 "Hsp_gaps": "Gaps",
+                "Hsp_mismatches": "Mismatches",
                 "Hsp_align-len": "Align_len",
                 "Hsp_query-from": "Query_from",
                 "Hsp_query-to": "Query_to",
@@ -192,6 +209,7 @@ class HitTarget(object):
                 "Hsp_hit-to": "Hit_to",
                 "Hsp_query-frame": "Query_frame",
                 "Hsp_hit-frame": "Hit_frame",
+                "Hsp_qcov": "Query_Coverage"
             }
         )
 
