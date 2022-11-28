@@ -47,7 +47,7 @@ process ENTAP_RUN {
     mkdir -p \$PWD/outfiles/similarity_search/DIAMOND
     files=`ls blast*.out`
     for f in \$files; do
-       ln -s \$PWD/\$f \$PWD/outfiles/similarity_search/DIAMOND/\$f
+        ln -s \$PWD/\$f \$PWD/outfiles/similarity_search/DIAMOND/\$f
     done;
 
     # Link the InterProScan file to the diretory EnTAP expects

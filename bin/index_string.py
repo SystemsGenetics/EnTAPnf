@@ -44,12 +44,12 @@ def makeInfoDB(path):
     Parameters
     ----------
     path : string
-           Path of the new SQL database that is created.
+        Path of the new SQL database that is created.
 
     Returns
     -------
     ret0 : sqlite3.Connection
-           A connection to the new database.
+        A connection to the new database.
     """
     if os.path.exists(path):
         os.remove(path)
@@ -72,12 +72,12 @@ def makeLinksDB(path):
     Parameters
     ----------
     path : string
-           Path of the new SQL database that is created.
+        Path of the new SQL database that is created.
 
     Returns
     -------
     ret0 : sqlite3.Connection
-           A connection to the new database.
+        A connection to the new database.
     """
     conn = sqlite3.connect(path)
     sql = (
@@ -111,11 +111,10 @@ def populateInfoDB(conn, ifile):
     Parameters
     ----------
     conn : sqlite3.Connection
-           A connection to the SQL database that is populated with protein info
-           data.
+        A connection to the SQL database that is populated with protein info data.
     ifile : io.TextIOWrapper
-            The text CSV protein info file where data is pulled from to populate
-            the database.
+        The text CSV protein info file where data is pulled from to populate
+        the database.
     """
     while True:
         line = ifile.readline()
@@ -145,18 +144,18 @@ def populateLinksDB(conn, ifile):
     Parameters
     ----------
     conn : sqlite3.Connection
-           A connection to the SQL database that is populated with protein links
-           data.
+        A connection to the SQL database that is populated with protein links
+        data.
     ifile : io.TextIOWrapper
-            The text CSV protein links full file where data is pulled from to
-            populate the database.
+        The text CSV protein links full file where data is pulled from to
+        populate the database.
 
     Returns
     -------
     ret0 : bool
-           True if there is more data to read from the given input file or false
-           if the end of file has been reached and there is no more data to
-           populate to the next database.
+        True if there is more data to read from the given input file or false
+        if the end of file has been reached and there is no more data to
+        populate to the next database.
     """
     sqlIdx1 = "CREATE INDEX idx_protein_links_full_protein1" " ON protein_links_full (protein1);"
     sqlIdx2 = "CREATE INDEX idx_protein_links_full_protein2" " ON protein_links_full (protein2);"

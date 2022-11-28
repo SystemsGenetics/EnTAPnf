@@ -40,11 +40,11 @@ EnTAPnf can also provide additional information such as potential protein-protei
 ## Pipeline summary
 
 1. Homology searching against specified databases using Diamond BLAST ([`Diamond`](https://github.com/bbuchfink/diamond)). Supported databases include:
-   - NCBI nr
-   - NCBI RefSeq
-   - ExPASy SwissProt
-   - ExPASy Trembl
-   - STRING database
+    - NCBI nr
+    - NCBI RefSeq
+    - ExPASy SwissProt
+    - ExPASy Trembl
+    - STRING database
 2. Execution of [InterProScan](https://interproscan-docs.readthedocs.io/en/latest/)
 
 ## Quick Start
@@ -57,27 +57,27 @@ EnTAPnf can also provide additional information such as potential protein-protei
 
 1. Download the pipeline and test it on a minimal dataset with a single command:
 
-   ```console
-   nextflow run systemsgenetics/entapnf -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
+    ```console
+    nextflow run systemsgenetics/entapnf -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    ```
 
-   > - Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-   > - If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
+    > - Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
+    > - If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
 
 1. Start running your own analysis!
 
-   ```console
-   nextflow run systemsgenetics/entapnf \
-     -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> \
-     --batch_size 100 \
-     --input <fasta file> \
-     --data_sprot <directory with swissprot diamond index> \
-     --data_refseq <directory with refseq diamond index> \
-     --data_ipr <directory with InterProScan data> \
-     --max_cpus 10 \
-     --max_memory 6GB
+    ```console
+    nextflow run systemsgenetics/entapnf \
+        -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> \
+        --batch_size 100 \
+        --input <fasta file> \
+        --data_sprot <directory with swissprot diamond index> \
+        --data_refseq <directory with refseq diamond index> \
+        --data_ipr <directory with InterProScan data> \
+        --max_cpus 10 \
+        --max_memory 6GB
 
-   ```
+    ```
 
 - The `--batch_size` arguments indicates the number of sequences to process in each batch.
 - It is recommended if using NCBI nr to set a large enough `--max_memory` size.

@@ -26,14 +26,14 @@ def filterBlastXML(path):
     Parameters
     ----------
     path : object
-           Path to the blast XML file that is filtered.
+        Path to the blast XML file that is filtered.
 
     Returns
     -------
     ret0 : list
-           Filtered proteins from the blast XML file at the given path. The
-           proteins are filtered based off finding each unique protein with the
-           highest correlation length or e-value.
+        Filtered proteins from the blast XML file at the given path. The
+        proteins are filtered based off finding each unique protein with the
+        highest correlation length or e-value.
     """
     data = parseBLASTXMLfile(path, True)
     queryDefs = data["Query_def"]
@@ -61,14 +61,14 @@ def findMatches(protein):
     Parameters
     ----------
     protein : object
-              Protein id that is matched with protein link rows protein columns.
+        Protein id that is matched with protein link rows protein columns.
 
     Returns
     -------
     ret0 : list
-           Protein link database rows that match the given protein with the rows
-           protein1 or protein2 column. This queries all separate protein link
-           databases.
+        Protein link database rows that match the given protein with the rows
+        protein1 or protein2 column. This queries all separate protein link
+        databases.
     """
     sql = "SELECT * FROM protein_links_full WHERE `protein1` = ? OR `protein2` = ?;"
     i = 0
@@ -96,11 +96,11 @@ def processProteinLinks(graph, rows):
     Parameters
     ----------
     graph : igraph.Graph
-            The graph object that is populated with protein vertices and protein
-            link edges.
+        The graph object that is populated with protein vertices and protein
+        link edges.
     rows : list
-           The protein link database rows that is used to populate the given
-           igraph object.
+        The protein link database rows that is used to populate the given
+        igraph object.
     """
     proteins = set()
     links = set()
@@ -149,14 +149,14 @@ def proteinInfo(protein):
     Parameters
     ----------
     protein : object
-              The external protein id that is used to find a protein info
-              database match.
+        The external protein id that is used to find a protein info
+        database match.
 
     Returns
     -------
     ret0 : object
-           A single protein info database row that matches the given protein id
-           or None if no match is found in the protein info database.
+        A single protein info database row that matches the given protein id
+        or None if no match is found in the protein info database.
     """
     sql = "SELECT * FROM protein_info WHERE `protein_external_id` = ?;"
     rpath = "%s.info.db" % (databasePath,)

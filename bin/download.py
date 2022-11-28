@@ -37,7 +37,7 @@ def defaultState():
     Returns
     -------
     ret0 : dictionary
-           A new default session state where no task is complete.
+        A new default session state where no task is complete.
     """
     ret = {}
     for key in DOWNLOAD_TASKS:
@@ -155,8 +155,8 @@ def loadSession(rstList):
     Parameters
     ----------
     rstList : string
-              Command line reset argument string that provides a list of comma
-              delimited task names that is reset.
+        Command line reset argument string that provides a list of comma
+        delimited task names that is reset.
     """
     global sessionState
     if not os.path.isfile("session.json") or rstList == "ALL":
@@ -179,7 +179,7 @@ def processTask(name):
     Parameters
     ----------
     name : string
-           Key name of the task that is processed.
+        Key name of the task that is processed.
     """
     state = sessionState[name]
     dirPath = DOWNLOAD_TASKS[name]["dir"]

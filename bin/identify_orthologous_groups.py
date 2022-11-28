@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
         # Get the list of orthologous groups per match.
         sql = """
-          SELECT OG_id FROM odb10v1_OG2genes WHERE odb_gene_id = ?;
+            SELECT OG_id FROM odb10v1_OG2genes WHERE odb_gene_id = ?;
         """
         cur = conn.cursor()
         cur.execute(sql, (row["Hit_id"],))
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
             # First get the name and taxonomy ID for the group.
             sql = """
-              SELECT ncbi_taxid, name FROM odb10v1_OGs WHERE OG_id = ?;
+                SELECT ncbi_taxid, name FROM odb10v1_OGs WHERE OG_id = ?;
             """
             cur = conn.cursor()
             cur.execute(sql, (OG[0],))
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
             # Second get the annotations
             sql = """
-              SELECT db_name, term_id, num_genes FROM odb10v1_OG_xrefs WHERE OG_id = ?;
+                SELECT db_name, term_id, num_genes FROM odb10v1_OG_xrefs WHERE OG_id = ?;
             """
             cur = conn.cursor()
             cur.execute(sql, (OG[0],))

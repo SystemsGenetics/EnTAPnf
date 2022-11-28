@@ -23,7 +23,7 @@ class EnzymeLookup:
         Parameters
         ----------
         path : string
-               File path to the enzyme data file this new table loads into memory.
+            File path to the enzyme data file this new table loads into memory.
         """
         self.__links = {}
         with open(path, "r") as ifile:
@@ -61,22 +61,22 @@ class EnzymeLookup:
         Parameters
         ----------
         gene : string
-               The gene that is matched. This is only used to add to returned
-               tuples and not matched against.
+            The gene that is matched. This is only used to add to returned
+            tuples and not matched against.
         id_ : string
-              The protein id that is matched. This is only used to add to
-              returned tuples and not matched against.
+            The protein id that is matched. This is only used to add to
+            returned tuples and not matched against.
         name : string
-               The protein name that is matched. This is the value actually
-               used to reverse lookup any EC numbers and descriptions that
-               contain this protein name.
+            The protein name that is matched. This is the value actually
+            used to reverse lookup any EC numbers and descriptions that
+            contain this protein name.
 
         Returns
         -------
         ret0 : list
-               Tuples that contain any matches found. Each tuple contains the
-               given gene, given protein id, given protein name, matched EC id,
-               and matched EC description.
+            Tuples that contain any matches found. Each tuple contains the
+            given gene, given protein id, given protein name, matched EC id,
+            and matched EC description.
         """
         ret = []
         if name in self.__links:
