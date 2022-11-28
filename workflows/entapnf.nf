@@ -339,7 +339,7 @@ workflow ENTAPNF {
             }
         }
 
-        entap_run([['id': 'entap'], params.input], entap_dbs, "${baseDir}/assets/entap_config.ini",
+        entap_run(params.input, entap_dbs, "${baseDir}/assets/entap_config.ini",
             params.seq_type, entap_config.out.entap_db, entap_config.out.eggnog_db,
             entap_config.out.data_eggnog, ch_blast_results.collect(), interproscan_combine.out.tsv)
     }
