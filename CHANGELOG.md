@@ -8,16 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial alpha release of systemsgenetics/entapnf, created with the [nf-core](https://nf-co.re/) template.
 
 ### `Added`
+
 Tested support for
+
 - Similarity Search. Supports: SwissProt, NCBI NR, Trembl, NCBI Plant RefSeq
 - InterProScan.
 - EnTAP.
 
 ### `Fixed`
+
 N/A
 
 ### `Dependencies`
+
 Nextflow, Java
 
 ### `Deprecated`
+
 N/A
